@@ -1,0 +1,7 @@
+{
+  "name": "Dragon Age 2e Helper",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "tags": ["utility", "dice"],
+  "icon": "/vite.svg"
+}
