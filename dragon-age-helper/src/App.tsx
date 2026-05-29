@@ -1,19 +1,42 @@
-import "./App.css";
+import { CharacterSheetView } from "./presentation/components/CharacterSheetView";
+import { useCharacterSheet } from "./presentation/hooks/useCharacterSheet";
+
+import "./index.css";
 
 function App() {
-  return (
-    <div className="app-shell">
-      <header className="app-shell__header">
-        <h1 className="app-shell__title">Dragon Age 2e Helper</h1>
-        <p className="app-shell__subtitle">Fichas e rolagens — em construção</p>
-      </header>
-      <main className="app-shell__main">
-        <p className="app-shell__placeholder">
-          A interface da ficha será implementada na Etapa 1.
-        </p>
-      </main>
-    </div>
-  );
+    const {
+        characterSheet,
+        isObrReady,
+        lastRollResult,
+        rollError,
+        rollAttribute,
+        clearLastRoll,
+        setHpCurrent,
+        setHpMax,
+        setMpCurrent,
+        setMpMax,
+        addFocus,
+        removeFocus,
+        setFocusBonus,
+    } = useCharacterSheet();
+
+    return (
+        <CharacterSheetView
+            sheet={characterSheet}
+            isObrReady={isObrReady}
+            lastRollResult={lastRollResult}
+            rollError={rollError}
+            onRollAttribute={rollAttribute}
+            onHpCurrentChange={setHpCurrent}
+            onHpMaxChange={setHpMax}
+            onMpCurrentChange={setMpCurrent}
+            onMpMaxChange={setMpMax}
+            onAddFocus={addFocus}
+            onRemoveFocus={removeFocus}
+            onFocusBonusChange={setFocusBonus}
+            onClearRoll={clearLastRoll}
+        />
+    );
 }
 
 export default App;
