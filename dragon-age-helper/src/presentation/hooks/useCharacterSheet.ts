@@ -4,7 +4,7 @@ import OBR from "@owlbear-rodeo/sdk";
 import { owlbearService } from "../../infrastructure/owlbear/OwlbearService";
 import { POPOVER_HEIGHT, POPOVER_WIDTH } from "../layout/popoverLayout";
 
-import type { CharacterSheet, Attribute } from "../../domain/entities/characterSheet";
+import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entities/characterSheet";
 import type { StuntRollResult } from "../../domain/entities/diceRules";
 
 const INITIAL_CHARACTER: CharacterSheet = {
@@ -40,9 +40,10 @@ const INITIAL_CHARACTER: CharacterSheet = {
             name: "Força",
             abbreviation: "FOR",
             value: 4,
+            isPrimary: true,
             focusNames: ["Espadas"],
         },
-        { name: "Luta", abbreviation: "LUT", value: 0, focusNames: [] },
+        { name: "Luta", abbreviation: "LUT", value: 0, isPrimary: true, focusNames: [] },
         {
             name: "Percepção",
             abbreviation: "PER",
@@ -124,6 +125,56 @@ export function useCharacterSheet() {
         setRollError(null);
     };
 
+    const setName = useCallback((name: string) => {
+        setCharacterSheet((prev) => ({ ...prev, name }));
+    }, []);
+
+    const setHistorico = useCallback((historico: string) => {
+        setCharacterSheet((prev) => ({ ...prev, historico }));
+    }, []);
+
+    const setClassName = useCallback((className: string) => {
+        setCharacterSheet((prev) => ({ ...prev, className }));
+    }, []);
+
+    const setLevel = useCallback((level: number) => {
+        setCharacterSheet((prev) => ({
+            ...prev,
+            level: Math.max(1, level),
+        }));
+    }, []);
+
+    const setIdade = useCallback((idade: string) => {
+        setCharacterSheet((prev) => ({ ...prev, idade }));
+    }, []);
+
+    const setSexo = useCallback((sexo: string) => {
+        setCharacterSheet((prev) => ({ ...prev, sexo }));
+    }, []);
+
+    const setCombatStat = useCallback((stat: keyof CombatStats, value: number) => {
+        setCharacterSheet((prev) => ({
+            ...prev,
+            combatStats: {
+                speed: 0,
+                defense: 0,
+                armor: 0,
+                armorPenalty: 0,
+                ...prev.combatStats,
+                [stat]: value,
+            },
+        }));
+    }, []);
+
+    const setAttributeValue = useCallback((abbreviation: string, value: number) => {
+        setCharacterSheet((prev) => ({
+            ...prev,
+            attributes: prev.attributes.map((attr) =>
+                attr.abbreviation === abbreviation ? { ...attr, value } : attr
+            ),
+        }));
+    }, []);
+
     const setHpCurrent = useCallback(
         (value: number) => {
             setCharacterSheet((prev) => {
@@ -197,11 +248,60 @@ export function useCharacterSheet() {
         }));
     }, []);
 
+    const renameFocus = useCallback(
+        (abbreviation: string, oldName: string, newName: string) => {
+            const trimmed = newName.trim();
+            if (!trimmed || trimmed === oldName) return;
+
+            setCharacterSheet((prev) => ({
+                ...prev,
+                attributes: prev.attributes.map((attr) => {
+                    if (attr.abbreviation !== abbreviation) return attr;
+                    const names = attr.focusNames ?? [];
+                    if (names.includes(trimmed)) return attr;
+                    return {
+                        ...attr,
+                        focusNames: names.map((n) => (n === oldName ? trimmed : n)),
+                    };
+                }),
+            }));
+        },
+        []
+    );
+
+    const reorderFocus = useCallback(
+        (abbreviation: string, fromIndex: number, toIndex: number) => {
+            if (fromIndex === toIndex) return;
+
+            setCharacterSheet((prev) => ({
+                ...prev,
+                attributes: prev.attributes.map((attr) => {
+                    if (attr.abbreviation !== abbreviation) return attr;
+                    const names = [...(attr.focusNames ?? [])];
+                    const [moved] = names.splice(fromIndex, 1);
+                    if (!moved) return attr;
+                    names.splice(toIndex, 0, moved);
+                    return { ...attr, focusNames: names };
+                }),
+            }));
+        },
+        []
+    );
+
     const setFocusBonus = useCallback((abbreviation: string, bonus: number) => {
         setCharacterSheet((prev) => ({
             ...prev,
             attributes: prev.attributes.map((attr) =>
                 attr.abbreviation === abbreviation ? { ...attr, focusBonus: bonus } : attr
+            ),
+        }));
+    }, []);
+
+    const setAttributePrimary = useCallback((abbreviation: string, isPrimary: boolean) => {
+        setCharacterSheet((prev) => ({
+            ...prev,
+            attributes: prev.attributes.map((attr) =>
+                attr.abbreviation === abbreviation ? { ...attr, isPrimary } : attr
             ),
         }));
     }, []);
@@ -213,13 +313,24 @@ export function useCharacterSheet() {
         rollError,
         rollAttribute,
         clearLastRoll,
+        setName,
+        setHistorico,
+        setClassName,
+        setLevel,
+        setIdade,
+        setSexo,
+        setCombatStat,
+        setAttributeValue,
         setHpCurrent,
         setHpMax,
         setMpCurrent,
         setMpMax,
         addFocus,
         removeFocus,
+        renameFocus,
+        reorderFocus,
         setFocusBonus,
+        setAttributePrimary,
     };
 }
 

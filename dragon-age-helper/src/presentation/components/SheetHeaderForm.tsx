@@ -1,76 +1,124 @@
 import { ResourceValueMax } from "./ResourceValueMax";
+import { SheetFieldInput } from "./SheetFieldInput";
 
-import type { CharacterSheet } from "../../domain/entities/characterSheet";
+import type { CharacterSheet, CombatStats } from "../../domain/entities/characterSheet";
+
+const DEFAULT_COMBAT: CombatStats = {
+    speed: 0,
+    defense: 0,
+    armor: 0,
+    armorPenalty: 0,
+};
 
 interface SheetHeaderFormProps {
     sheet: CharacterSheet;
+    onNameChange: (value: string) => void;
+    onHistoricoChange: (value: string) => void;
+    onClassNameChange: (value: string) => void;
+    onLevelChange: (value: number) => void;
+    onIdadeChange: (value: string) => void;
+    onSexoChange: (value: string) => void;
+    onCombatStatChange: (stat: keyof CombatStats, value: number) => void;
     onHpCurrentChange: (value: number) => void;
     onHpMaxChange: (value: number) => void;
     onMpCurrentChange: (value: number) => void;
     onMpMaxChange: (value: number) => void;
 }
 
-function FieldCell({
-    label,
-    value,
-    className = "",
-    combatStat = false,
-}: {
-    label: string;
-    value: string;
-    className?: string;
-    combatStat?: boolean;
-}) {
-    const combatClass = combatStat ? "sheet-field--combat-stat" : "";
-    return (
-        <div className={`sheet-field ${combatClass} ${className}`.trim()}>
-            <div className="sheet-field__head">{label}</div>
-            <div
-                className={`sheet-field__body${combatStat ? " sheet-field__body--combat-stat" : ""}`.trim()}
-            >
-                {value || "—"}
-            </div>
-        </div>
-    );
+function parseOptionalInt(value: string, fallback: number): number {
+    const trimmed = value.trim();
+    if (trimmed === "") return fallback;
+    const parsed = Number.parseInt(trimmed, 10);
+    return Number.isNaN(parsed) ? fallback : parsed;
 }
 
 export function SheetHeaderForm({
     sheet,
+    onNameChange,
+    onHistoricoChange,
+    onClassNameChange,
+    onLevelChange,
+    onIdadeChange,
+    onSexoChange,
+    onCombatStatChange,
     onHpCurrentChange,
     onHpMaxChange,
     onMpCurrentChange,
     onMpMaxChange,
 }: SheetHeaderFormProps) {
-    const combat = sheet.combatStats;
+    const combat = { ...DEFAULT_COMBAT, ...sheet.combatStats };
 
     return (
         <header className="sheet-header-form">
             <div className="sheet-header-form__row sheet-header-form__row--primary">
-                <FieldCell label="Nome" value={sheet.name} className="sheet-field--wide" />
-                <FieldCell
+                <SheetFieldInput
+                    label="Nome"
+                    value={sheet.name}
+                    onChange={onNameChange}
+                    className="sheet-field--wide"
+                />
+                <SheetFieldInput
                     label="Histórico"
                     value={sheet.historico ?? ""}
+                    onChange={onHistoricoChange}
                     className="sheet-field--medium"
                 />
             </div>
             <div className="sheet-header-form__row sheet-header-form__row--secondary">
-                <FieldCell
+                <SheetFieldInput
                     label="Classe"
-                    value={`${sheet.className} · nível ${sheet.level}`}
+                    value={sheet.className}
+                    onChange={onClassNameChange}
                     className="sheet-field--class"
                 />
-                <FieldCell label="Idade" value={sheet.idade ?? ""} className="sheet-field--narrow" />
-                <FieldCell label="Sexo" value={sheet.sexo ?? ""} className="sheet-field--narrow" />
+                <SheetFieldInput
+                    label="Nível"
+                    value={String(sheet.level)}
+                    onChange={(v) => onLevelChange(parseOptionalInt(v, sheet.level))}
+                    className="sheet-field--narrow"
+                    inputMode="numeric"
+                    centered
+                />
+                <SheetFieldInput
+                    label="Idade"
+                    value={sheet.idade ?? ""}
+                    onChange={onIdadeChange}
+                    className="sheet-field--narrow"
+                />
+                <SheetFieldInput
+                    label="Sexo"
+                    value={sheet.sexo ?? ""}
+                    onChange={onSexoChange}
+                    className="sheet-field--narrow"
+                />
             </div>
             <div className="sheet-header-form__row sheet-header-form__row--combat">
-                {combat && (
-                    <>
-                        <FieldCell label="Velocidade" value={String(combat.speed)} combatStat />
-                        <FieldCell label="Defesa" value={String(combat.defense)} combatStat />
-                        <FieldCell label="Armadura" value={String(combat.armor)} combatStat />
-                        <FieldCell label="Penalidade" value={String(combat.armorPenalty)} combatStat />
-                    </>
-                )}
+                <SheetFieldInput
+                    label="Velocidade"
+                    value={String(combat.speed)}
+                    onChange={(v) => onCombatStatChange("speed", parseOptionalInt(v, combat.speed))}
+                    combatStat
+                />
+                <SheetFieldInput
+                    label="Defesa"
+                    value={String(combat.defense)}
+                    onChange={(v) => onCombatStatChange("defense", parseOptionalInt(v, combat.defense))}
+                    combatStat
+                />
+                <SheetFieldInput
+                    label="Armadura"
+                    value={String(combat.armor)}
+                    onChange={(v) => onCombatStatChange("armor", parseOptionalInt(v, combat.armor))}
+                    combatStat
+                />
+                <SheetFieldInput
+                    label="Penalidade"
+                    value={String(combat.armorPenalty)}
+                    onChange={(v) =>
+                        onCombatStatChange("armorPenalty", parseOptionalInt(v, combat.armorPenalty))
+                    }
+                    combatStat
+                />
                 <ResourceValueMax
                     label="Saúde"
                     current={sheet.hpCurrent}
@@ -80,17 +128,15 @@ export function SheetHeaderForm({
                     onCurrentChange={onHpCurrentChange}
                     onMaxChange={onHpMaxChange}
                 />
-                {sheet.mpMax > 0 && (
-                    <ResourceValueMax
-                        label="Mana"
-                        current={sheet.mpCurrent}
-                        max={sheet.mpMax}
-                        variant="mana"
-                        compact
-                        onCurrentChange={onMpCurrentChange}
-                        onMaxChange={onMpMaxChange}
-                    />
-                )}
+                <ResourceValueMax
+                    label="Mana"
+                    current={sheet.mpCurrent}
+                    max={sheet.mpMax}
+                    variant="mana"
+                    compact
+                    onCurrentChange={onMpCurrentChange}
+                    onMaxChange={onMpMaxChange}
+                />
             </div>
         </header>
     );

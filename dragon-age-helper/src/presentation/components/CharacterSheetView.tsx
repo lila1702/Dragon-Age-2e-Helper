@@ -6,7 +6,7 @@ import { SheetHeaderForm } from "./SheetHeaderForm";
 import { SheetTabs } from "./SheetTabs";
 import type { SheetTabId } from "./SheetTabs";
 
-import type { CharacterSheet, Attribute } from "../../domain/entities/characterSheet";
+import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entities/characterSheet";
 import type { StuntRollResult } from "../../domain/entities/diceRules";
 
 import "../styles/sheet.css";
@@ -17,13 +17,24 @@ export interface CharacterSheetViewProps {
     lastRollResult: StuntRollResult | null;
     rollError: string | null;
     onRollAttribute: (attribute: Attribute, focusName?: string) => void;
+    onNameChange: (value: string) => void;
+    onHistoricoChange: (value: string) => void;
+    onClassNameChange: (value: string) => void;
+    onLevelChange: (value: number) => void;
+    onIdadeChange: (value: string) => void;
+    onSexoChange: (value: string) => void;
+    onCombatStatChange: (stat: keyof CombatStats, value: number) => void;
     onHpCurrentChange: (value: number) => void;
     onHpMaxChange: (value: number) => void;
     onMpCurrentChange: (value: number) => void;
     onMpMaxChange: (value: number) => void;
     onAddFocus: (abbreviation: string, focusName: string) => void;
     onRemoveFocus: (abbreviation: string, focusName: string) => void;
+    onRenameFocus: (abbreviation: string, oldName: string, newName: string) => void;
+    onReorderFocus: (abbreviation: string, fromIndex: number, toIndex: number) => void;
     onFocusBonusChange: (abbreviation: string, bonus: number) => void;
+    onAttributeValueChange: (abbreviation: string, value: number) => void;
+    onPrimaryChange: (abbreviation: string, isPrimary: boolean) => void;
     onClearRoll?: () => void;
 }
 
@@ -43,13 +54,24 @@ export function CharacterSheetView({
     lastRollResult,
     rollError,
     onRollAttribute,
+    onNameChange,
+    onHistoricoChange,
+    onClassNameChange,
+    onLevelChange,
+    onIdadeChange,
+    onSexoChange,
+    onCombatStatChange,
     onHpCurrentChange,
     onHpMaxChange,
     onMpCurrentChange,
     onMpMaxChange,
     onAddFocus,
     onRemoveFocus,
+    onRenameFocus,
+    onReorderFocus,
     onFocusBonusChange,
+    onAttributeValueChange,
+    onPrimaryChange,
     onClearRoll,
 }: CharacterSheetViewProps) {
     const [activeTab, setActiveTab] = useState<SheetTabId>("atributos");
@@ -74,6 +96,13 @@ export function CharacterSheetView({
             <div className="character-sheet__card">
                 <SheetHeaderForm
                     sheet={sheet}
+                    onNameChange={onNameChange}
+                    onHistoricoChange={onHistoricoChange}
+                    onClassNameChange={onClassNameChange}
+                    onLevelChange={onLevelChange}
+                    onIdadeChange={onIdadeChange}
+                    onSexoChange={onSexoChange}
+                    onCombatStatChange={onCombatStatChange}
                     onHpCurrentChange={onHpCurrentChange}
                     onHpMaxChange={onHpMaxChange}
                     onMpCurrentChange={onMpCurrentChange}
@@ -103,7 +132,11 @@ export function CharacterSheetView({
                                     onRoll={handleRoll}
                                     onAddFocus={onAddFocus}
                                     onRemoveFocus={onRemoveFocus}
+                                    onRenameFocus={onRenameFocus}
+                                    onReorderFocus={onReorderFocus}
                                     onFocusBonusChange={onFocusBonusChange}
+                                    onAttributeValueChange={onAttributeValueChange}
+                                    onPrimaryChange={onPrimaryChange}
                                     disabled={rollsDisabled}
                                 />
                             ))}

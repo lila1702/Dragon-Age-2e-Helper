@@ -83,6 +83,27 @@
     letter-spacing: 0.06em;
 }
 
+.sheet-field__head--with-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    padding: 0.15rem 0.2rem;
+}
+
+.sheet-field__head__abbr {
+    line-height: 1;
+}
+
+.attribute-strip__primary-check {
+    width: 0.65rem;
+    height: 0.65rem;
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: var(--da-red);
+    cursor: pointer;
+}
+
 .sheet-field__body--combat-stat {
     justify-content: center;
     text-align: center;
@@ -122,6 +143,47 @@
 .sheet-field__body--action {
     padding: 0.15rem;
     justify-content: center;
+}
+
+.sheet-field__body--input {
+    padding: 0.2rem 0.35rem;
+}
+
+.sheet-field__body--input-centered {
+    justify-content: center;
+}
+
+.sheet-field__body--input-large .sheet-field__input {
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.sheet-field__input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    color: var(--da-black);
+    line-height: 1.25;
+    padding: 0;
+    min-width: 0;
+}
+
+.sheet-field__body--combat-stat .sheet-field__input {
+    text-align: center;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.sheet-field__input:focus {
+    outline: none;
+}
+
+.sheet-field__input::placeholder {
+    color: var(--da-muted);
+    opacity: 0.7;
 }
 
 /* Header form */
@@ -281,7 +343,7 @@
 }
 
 .attribute-strip__attr {
-    flex: 0 4rem;
+    flex: 0 4.75rem;
 }
 
 .attribute-strip__foco-mod {
@@ -310,19 +372,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.1rem;
     width: 100%;
     min-height: 100%;
 }
 
+.focus-bonus-input__cluster {
+    display: grid;
+    grid-template-columns: 0.75rem 2rem;
+    align-items: center;
+    justify-items: center;
+    width: 2.75rem;
+}
+
 .focus-bonus-input__prefix {
+    justify-self: end;
     font-weight: 700;
     font-size: 0.8125rem;
     color: var(--da-black);
+    line-height: 1;
 }
 
 .focus-bonus-input__field {
-    width: 1.75rem;
+    width: 100%;
     border: none;
     background: transparent;
     font-size: 0.875rem;
@@ -340,12 +411,6 @@
     -webkit-appearance: none;
     appearance: none;
     margin: 0;
-}
-
-.focus-bonus-input__hint {
-    font-size: 0.625rem;
-    color: var(--da-muted);
-    line-height: 1;
 }
 
 .sheet-field__body--focos-list {
@@ -386,6 +451,34 @@
     line-height: 1;
 }
 
+.attribute-strip__attr-input {
+    width: 100%;
+    height: 100%;
+    min-height: 2.25rem;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    font-family: inherit;
+    font-size: 1.375rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--da-black);
+    text-align: center;
+    line-height: 1;
+    padding: 0.15rem;
+    cursor: text;
+}
+
+.attribute-strip__attr-input:focus {
+    outline: none;
+    background: color-mix(in srgb, var(--da-red) 8%, var(--da-white));
+}
+
+.attribute-strip__attr-input:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 .focus-list {
     display: flex;
     flex-direction: column;
@@ -406,8 +499,44 @@
     margin: 0;
 }
 
-.focus-list__focus-btn {
+.focus-list__item--dragging .focus-list__row {
+    opacity: 0.45;
+}
+
+.focus-list__item--drop-target .focus-list__row {
+    outline: 2px dashed var(--da-red);
+    outline-offset: 1px;
+}
+
+.focus-list__row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.15rem;
     width: 100%;
+}
+
+.focus-list__drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 1.1rem;
+    font-size: 0.5rem;
+    letter-spacing: -0.12em;
+    color: var(--da-muted);
+    cursor: grab;
+    user-select: none;
+    border: 1px solid var(--da-black);
+    border-radius: 3px;
+    background: var(--da-cell-bg);
+}
+
+.focus-list__drag-handle:active {
+    cursor: grabbing;
+}
+
+.focus-list__focus-btn {
+    flex: 1;
+    min-width: 0;
     padding: 0.35rem 0.5rem;
     text-align: left;
     font-size: 0.75rem;
@@ -418,6 +547,13 @@
     color: var(--da-black);
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
+}
+
+.focus-list__focus-label {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .focus-list__focus-btn:hover:not(:disabled) {
@@ -468,6 +604,47 @@
     border-radius: 3px;
     background: var(--da-white);
     color: var(--da-black);
+}
+
+.focus-list__input--edit {
+    font-size: 0.75rem;
+}
+
+.focus-context-menu {
+    position: fixed;
+    z-index: 1000;
+    min-width: 7rem;
+    padding: 0.2rem;
+    background: var(--da-white);
+    border: 1px solid var(--da-black);
+    border-radius: 4px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.focus-context-menu__item {
+    display: block;
+    width: 100%;
+    padding: 0.35rem 0.5rem;
+    border: none;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--da-black);
+    font-family: inherit;
+    font-size: 0.75rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.focus-context-menu__item:hover {
+    background: var(--da-cell-bg);
+}
+
+.focus-context-menu__item--danger {
+    color: var(--da-red);
+}
+
+.focus-context-menu__item--danger:hover {
+    background: color-mix(in srgb, var(--da-red) 10%, var(--da-white));
 }
 
 .roll-banner {

@@ -1,3 +1,4 @@
+import { AttributeValueInput } from "./AttributeValueInput";
 import { FocusBonusInput } from "./FocusBonusInput";
 import { FocusListEditor } from "./FocusListEditor";
 
@@ -8,7 +9,11 @@ export interface AttributeStripRowProps {
     onRoll: (attribute: Attribute, focusName?: string) => void;
     onAddFocus: (abbreviation: string, focusName: string) => void;
     onRemoveFocus: (abbreviation: string, focusName: string) => void;
+    onRenameFocus: (abbreviation: string, oldName: string, newName: string) => void;
+    onReorderFocus: (abbreviation: string, fromIndex: number, toIndex: number) => void;
     onFocusBonusChange: (abbreviation: string, bonus: number) => void;
+    onAttributeValueChange: (abbreviation: string, value: number) => void;
+    onPrimaryChange: (abbreviation: string, isPrimary: boolean) => void;
     disabled?: boolean;
 }
 
@@ -17,7 +22,11 @@ export function AttributeStripRow({
     onRoll,
     onAddFocus,
     onRemoveFocus,
+    onRenameFocus,
+    onReorderFocus,
     onFocusBonusChange,
+    onAttributeValueChange,
+    onPrimaryChange,
     disabled = false,
 }: AttributeStripRowProps) {
     const focusNames = attribute.focusNames ?? [];
@@ -25,20 +34,28 @@ export function AttributeStripRow({
     return (
         <div className="attribute-strip">
             <div className="attribute-strip__attr sheet-field">
-                <div className="sheet-field__head sheet-field__head--abbr">
-                    {attribute.abbreviation.toUpperCase()}
+                <div className="sheet-field__head sheet-field__head--abbr sheet-field__head--with-check">
+                    <input
+                        type="checkbox"
+                        className="attribute-strip__primary-check"
+                        checked={attribute.isPrimary ?? false}
+                        aria-label={`${attribute.name} é atributo primário`}
+                        onChange={(e) =>
+                            onPrimaryChange(attribute.abbreviation, e.target.checked)
+                        }
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                    <span className="sheet-field__head__abbr">
+                        {attribute.abbreviation.toUpperCase()}
+                    </span>
                 </div>
                 <div className="sheet-field__body sheet-field__body--attr">
-                    <button
-                        type="button"
-                        className="attribute-strip__attr-btn"
-                        title={attribute.name}
+                    <AttributeValueInput
+                        attribute={attribute}
                         disabled={disabled}
-                        aria-label={`Rolar ${attribute.name}`}
-                        onClick={() => onRoll(attribute)}
-                    >
-                        <span className="attribute-strip__attr-value">{attribute.value}</span>
-                    </button>
+                        onValueChange={onAttributeValueChange}
+                        onRoll={onRoll}
+                    />
                 </div>
             </div>
 
@@ -61,6 +78,12 @@ export function AttributeStripRow({
                         onRollFocus={(name) => onRoll(attribute, name)}
                         onAddFocus={(name) => onAddFocus(attribute.abbreviation, name)}
                         onRemoveFocus={(name) => onRemoveFocus(attribute.abbreviation, name)}
+                        onRenameFocus={(oldName, newName) =>
+                            onRenameFocus(attribute.abbreviation, oldName, newName)
+                        }
+                        onReorderFocus={(from, to) =>
+                            onReorderFocus(attribute.abbreviation, from, to)
+                        }
                     />
                 </div>
             </div>

@@ -2,6 +2,7 @@ export interface Attribute {
     name: string;
     abbreviation: string;
     value: number;
+    isPrimary?: boolean;
     focusBonus?: number;
     activeFocusName?: string;
     focusNames?: string[];
