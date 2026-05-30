@@ -12,6 +12,7 @@ export interface SelectionResult {
 export interface IOwlbearService {
     onReady(callback: () => void): void;
     resolveSelection(): Promise<SelectionResult>;
+    resolveActiveToken(): Promise<SelectionResult>;
     getTokenDisplayName(tokenId: string): Promise<string | null>;
     isCurrentPlayerGm(): Promise<boolean>;
     canEditToken(tokenId: string): Promise<boolean>;

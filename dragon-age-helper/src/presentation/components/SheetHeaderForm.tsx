@@ -24,6 +24,7 @@ interface SheetHeaderFormProps {
     onHpMaxChange: (value: number) => void;
     onMpCurrentChange: (value: number) => void;
     onMpMaxChange: (value: number) => void;
+    onResourceEditingChange?: (isEditing: boolean) => void;
 }
 
 function parseOptionalInt(value: string, fallback: number): number {
@@ -47,6 +48,7 @@ export function SheetHeaderForm({
     onHpMaxChange,
     onMpCurrentChange,
     onMpMaxChange,
+    onResourceEditingChange,
 }: SheetHeaderFormProps) {
     const combat = { ...DEFAULT_COMBAT, ...sheet.combatStats };
 
@@ -140,6 +142,7 @@ export function SheetHeaderForm({
                     disabled={disabled}
                     onCurrentChange={onHpCurrentChange}
                     onMaxChange={onHpMaxChange}
+                    onEditingChange={onResourceEditingChange}
                 />
                 <ResourceValueMax
                     label="Mana"
@@ -150,6 +153,7 @@ export function SheetHeaderForm({
                     disabled={disabled}
                     onCurrentChange={onMpCurrentChange}
                     onMaxChange={onMpMaxChange}
+                    onEditingChange={onResourceEditingChange}
                 />
             </div>
         </header>

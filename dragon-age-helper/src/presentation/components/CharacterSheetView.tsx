@@ -37,6 +37,7 @@ export interface CharacterSheetViewProps {
     onHpMaxChange: (value: number) => void;
     onMpCurrentChange: (value: number) => void;
     onMpMaxChange: (value: number) => void;
+    onResourceEditingChange?: (isEditing: boolean) => void;
     onAddFocus: (abbreviation: string, focusName: string) => void;
     onRemoveFocus: (abbreviation: string, focusName: string) => void;
     onRenameFocus: (abbreviation: string, oldName: string, newName: string) => void;
@@ -81,6 +82,7 @@ export function CharacterSheetView({
     onHpMaxChange,
     onMpCurrentChange,
     onMpMaxChange,
+    onResourceEditingChange,
     onAddFocus,
     onRemoveFocus,
     onRenameFocus,
@@ -123,6 +125,7 @@ export function CharacterSheetView({
                     onHpMaxChange={onHpMaxChange}
                     onMpCurrentChange={onMpCurrentChange}
                     onMpMaxChange={onMpMaxChange}
+                    onResourceEditingChange={onResourceEditingChange}
                 />
 
                 <SheetTabs

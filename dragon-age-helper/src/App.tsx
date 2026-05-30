@@ -32,6 +32,7 @@ function App() {
         setHpMax,
         setMpCurrent,
         setMpMax,
+        setResourceEditing,
         addFocus,
         removeFocus,
         renameFocus,
@@ -70,6 +71,7 @@ function App() {
             onHpMaxChange={setHpMax}
             onMpCurrentChange={setMpCurrent}
             onMpMaxChange={setMpMax}
+            onResourceEditingChange={setResourceEditing}
             onAddFocus={addFocus}
             onRemoveFocus={removeFocus}
             onRenameFocus={renameFocus}

@@ -13,14 +13,18 @@ export function useSelectedToken(isObrReady: boolean) {
         tokenId: null,
         error: null,
     });
+    const refreshGenerationRef = useRef(0);
 
     const refreshSelection = useCallback(async () => {
         if (!isObrReady) return;
 
-        try {
-            const { tokenId: resolvedId, error } = await owlbearService.resolveSelection();
-            const prev = selectionRef.current;
+        const generation = ++refreshGenerationRef.current;
 
+        try {
+            const { tokenId: resolvedId, error } = await owlbearService.resolveActiveToken();
+            if (generation !== refreshGenerationRef.current) return;
+
+            const prev = selectionRef.current;
             if (prev.tokenId === resolvedId && prev.error === error) {
                 return;
             }
@@ -31,11 +35,14 @@ export function useSelectedToken(isObrReady: boolean) {
 
             if (resolvedId) {
                 const name = await owlbearService.getTokenDisplayName(resolvedId);
+                if (generation !== refreshGenerationRef.current) return;
                 setTokenName(name);
             } else {
                 setTokenName(null);
             }
         } catch (err) {
+            if (generation !== refreshGenerationRef.current) return;
+
             console.error("Erro ao resolver seleção de token:", err);
             selectionRef.current = { tokenId: null, error: "Selecione um token no mapa para abrir a ficha." };
             setTokenId(null);
@@ -46,6 +53,7 @@ export function useSelectedToken(isObrReady: boolean) {
 
     useEffect(() => {
         if (!isObrReady) {
+            refreshGenerationRef.current += 1;
             selectionRef.current = { tokenId: null, error: null };
             setTokenId(null);
             setTokenName(null);
@@ -55,12 +63,30 @@ export function useSelectedToken(isObrReady: boolean) {
 
         void refreshSelection();
 
-        const unsubscribe = OBR.player.onChange(() => {
+        const unsubscribePlayer = OBR.player.onChange(() => {
             void refreshSelection();
         });
 
+        const unsubscribeSceneItems = OBR.scene.items.onChange((items) => {
+            const activeTokenId = selectionRef.current.tokenId;
+            if (activeTokenId && !items.some((item) => item.id === activeTokenId)) {
+                void refreshSelection();
+            }
+        });
+
+        let unsubscribeSceneReady: (() => void) | undefined;
+        void OBR.scene.isReady().then((ready) => {
+            if (!ready) {
+                unsubscribeSceneReady = OBR.scene.onReadyChange((isReady) => {
+                    if (isReady) void refreshSelection();
+                });
+            }
+        });
+
         return () => {
-            unsubscribe();
+            unsubscribePlayer();
+            unsubscribeSceneItems();
+            unsubscribeSceneReady?.();
         };
     }, [isObrReady, refreshSelection]);
 

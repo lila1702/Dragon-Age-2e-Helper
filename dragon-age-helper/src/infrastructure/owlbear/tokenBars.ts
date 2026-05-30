@@ -1,8 +1,6 @@
 import type { Item } from "@owlbear-rodeo/sdk";
 
-import type { TokenBarValue } from "./owlbear-dice";
-
-type ItemWithBars = Item & { barValues?: TokenBarValue[] };
+import { applyHpMpToOwlTrackers } from "./owlTrackersSync";
 
 export function setTokenBarValues(
     item: Item,
@@ -11,10 +9,5 @@ export function setTokenBarValues(
     mpCurrent: number,
     mpMax: number
 ): void {
-    const itemWithBars = item as ItemWithBars;
-
-    itemWithBars.barValues = [
-        { current: hpCurrent, max: hpMax, color: "red" },
-        { current: mpCurrent, max: mpMax, color: "blue" },
-    ];
+    applyHpMpToOwlTrackers(item, hpCurrent, hpMax, mpCurrent, mpMax);
 }

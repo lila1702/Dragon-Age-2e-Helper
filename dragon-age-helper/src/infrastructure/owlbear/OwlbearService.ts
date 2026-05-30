@@ -7,6 +7,12 @@ import { SELECTION_ERRORS } from "./selectionErrors";
 import { applySheetMetadataToItem } from "./applySheetToItem";
 import { devDiceRoll } from "./devDiceRoll";
 import { rollDicePlus } from "./dicePlusClient";
+import {
+    clearPinnedToken,
+    readPinnedToken,
+    writePinnedToken,
+} from "./pinnedTokenStorage";
+import { findOwnedTokenIds, tokenExistsInScene } from "./tokenDiscovery";
 import { resolveCanEditToken } from "./tokenAccess";
 import { setTokenBarValues } from "./tokenBars";
 
@@ -29,16 +35,45 @@ export class OwlbearService implements IOwlbearService {
     }
 
     async resolveSelection(): Promise<SelectionResult> {
-        const selection = (await OBR.player.getSelection()) ?? [];
+        return this.resolveActiveToken();
+    }
 
-        if (selection.length === 0) {
-            return { tokenId: null, error: SELECTION_ERRORS.NO_TOKEN };
-        }
+    async resolveActiveToken(): Promise<SelectionResult> {
+        const selection = (await OBR.player.getSelection()) ?? [];
+        const playerId = OBR.player.id;
+        const roomId = OBR.room.id;
+
         if (selection.length > 1) {
             return { tokenId: null, error: SELECTION_ERRORS.MULTIPLE };
         }
 
-        return { tokenId: selection[0], error: SELECTION_ERRORS.NONE };
+        if (selection.length === 1) {
+            const tokenId = selection[0];
+            writePinnedToken(roomId, playerId, tokenId);
+            return { tokenId, error: SELECTION_ERRORS.NONE };
+        }
+
+        let pinned = readPinnedToken(roomId, playerId);
+        if (pinned && !(await tokenExistsInScene(pinned))) {
+            clearPinnedToken(roomId, playerId);
+            pinned = null;
+        }
+
+        if (pinned) {
+            return { tokenId: pinned, error: SELECTION_ERRORS.NONE };
+        }
+
+        const role = await OBR.player.getRole();
+        if (role !== "GM") {
+            const ownedIds = await findOwnedTokenIds(playerId);
+            if (ownedIds.length === 1) {
+                const tokenId = ownedIds[0];
+                writePinnedToken(roomId, playerId, tokenId);
+                return { tokenId, error: SELECTION_ERRORS.NONE };
+            }
+        }
+
+        return { tokenId: null, error: SELECTION_ERRORS.NO_TOKEN };
     }
 
     async getTokenDisplayName(tokenId: string): Promise<string | null> {

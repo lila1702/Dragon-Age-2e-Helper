@@ -7,6 +7,7 @@ import { showOwlbearNotification, showRollNotification } from "../../infrastruct
 import { DEV_MOCK_CHARACTER } from "../fixtures/devMockCharacter";
 import { POPOVER_HEIGHT, POPOVER_WIDTH } from "../layout/popoverLayout";
 import { useSelectedToken } from "./useSelectedToken";
+import { useOwlTrackerSync } from "./useOwlTrackerSync";
 
 import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entities/characterSheet";
 import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
@@ -28,11 +29,11 @@ export function useCharacterSheet() {
     const [canEditToken, setCanEditToken] = useState(!isObrAvailable);
 
     const skipSaveRef = useRef(true);
-    const lastSelectionNoticeRef = useRef<string | null>(null);
     const isRollingRef = useRef(false);
     const loadedTokenIdRef = useRef<string | null>(null);
     const previousTokenIdRef = useRef<string | null>(null);
     const isDirtyRef = useRef(false);
+    const isEditingResourcesRef = useRef(false);
     const sheetSnapshotRef = useRef({
         tokenId: null as string | null,
         sheet: characterSheet,
@@ -40,6 +41,20 @@ export function useCharacterSheet() {
     });
 
     const { tokenId, tokenName, selectionError } = useSelectedToken(isObrReady);
+
+    const { pushTrackersToToken } = useOwlTrackerSync({
+        isObrAvailable,
+        isObrReady,
+        tokenId,
+        hasSheetOnToken,
+        isLoadingSheet,
+        canEditToken,
+        loadedTokenIdRef,
+        characterSheet,
+        setCharacterSheet,
+        isDirtyRef,
+        isEditingResourcesRef,
+    });
 
     sheetSnapshotRef.current = {
         tokenId: loadedTokenIdRef.current,
@@ -61,20 +76,6 @@ export function useCharacterSheet() {
         void OBR.action.setWidth(POPOVER_WIDTH);
         void OBR.action.setHeight(POPOVER_HEIGHT);
     }, [isObrReady]);
-
-    useEffect(() => {
-        if (!isObrAvailable || !isObrReady) return;
-
-        if (!selectionError) {
-            lastSelectionNoticeRef.current = null;
-            return;
-        }
-
-        if (lastSelectionNoticeRef.current === selectionError) return;
-
-        lastSelectionNoticeRef.current = selectionError;
-        void showOwlbearNotification(selectionError, "WARNING");
-    }, [isObrAvailable, isObrReady, selectionError]);
 
     const flushSaveForToken = useCallback(async (targetTokenId: string) => {
         const snap = sheetSnapshotRef.current;
@@ -170,6 +171,7 @@ export function useCharacterSheet() {
                 if (loaded) {
                     setHasSheetOnToken(true);
                     setCharacterSheet(loaded);
+                    pushTrackersToToken(loaded, loadForToken);
                 } else {
                     setHasSheetOnToken(false);
                     setCharacterSheet(createEmptySheet(loadForToken));
@@ -195,7 +197,7 @@ export function useCharacterSheet() {
         return () => {
             cancelled = true;
         };
-    }, [isObrAvailable, isObrReady, tokenId, selectionError, flushSaveForToken]);
+    }, [isObrAvailable, isObrReady, tokenId, selectionError, flushSaveForToken, pushTrackersToToken]);
 
     useEffect(() => {
         if (!isObrReady || !tokenId || !hasSheetOnToken || skipSaveRef.current) return;
@@ -323,6 +325,10 @@ export function useCharacterSheet() {
         },
         [canEditSheet]
     );
+
+    const setResourceEditing = useCallback((isEditing: boolean) => {
+        isEditingResourcesRef.current = isEditing;
+    }, []);
 
     const setName = useCallback((name: string) => updateSheet((prev) => ({ ...prev, name })), [updateSheet]);
 
@@ -537,6 +543,7 @@ export function useCharacterSheet() {
         setHpMax,
         setMpCurrent,
         setMpMax,
+        setResourceEditing,
         addFocus,
         removeFocus,
         renameFocus,

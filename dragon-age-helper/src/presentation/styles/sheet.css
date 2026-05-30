@@ -335,8 +335,9 @@
 }
 
 .sheet-tabs__tab--active {
-    background: var(--da-black);
+    background: var(--da-red);
     color: var(--da-white);
+    border-color: var(--da-red-dark);
     margin-bottom: -2px;
     padding-bottom: calc(0.4rem + 2px);
 }
