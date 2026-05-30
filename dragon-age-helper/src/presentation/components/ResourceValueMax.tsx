@@ -6,6 +6,7 @@ interface ResourceValueMaxProps {
     onCurrentChange: (value: number) => void;
     onMaxChange: (value: number) => void;
     compact?: boolean;
+    disabled?: boolean;
 }
 
 function clampNonNegative(value: number): number {
@@ -25,6 +26,7 @@ export function ResourceValueMax({
     onCurrentChange,
     onMaxChange,
     compact = false,
+    disabled = false,
 }: ResourceValueMaxProps) {
     const currentClass =
         variant === "health" ? "resource-vm__current--hp" : "resource-vm__current--mp";
@@ -37,6 +39,7 @@ export function ResourceValueMax({
                 value={current}
                 min={0}
                 max={max}
+                disabled={disabled}
                 aria-label={`${label} atual`}
                 onChange={(e) => onCurrentChange(parseInput(e.target.value))}
             />
@@ -48,6 +51,7 @@ export function ResourceValueMax({
                 className="resource-vm__input resource-vm__max"
                 value={max}
                 min={0}
+                disabled={disabled}
                 aria-label={`${label} máximo`}
                 onChange={(e) => onMaxChange(parseInput(e.target.value))}
             />

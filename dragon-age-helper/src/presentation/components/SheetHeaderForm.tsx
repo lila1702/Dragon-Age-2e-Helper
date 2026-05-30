@@ -12,6 +12,7 @@ const DEFAULT_COMBAT: CombatStats = {
 
 interface SheetHeaderFormProps {
     sheet: CharacterSheet;
+    disabled?: boolean;
     onNameChange: (value: string) => void;
     onHistoricoChange: (value: string) => void;
     onClassNameChange: (value: string) => void;
@@ -34,6 +35,7 @@ function parseOptionalInt(value: string, fallback: number): number {
 
 export function SheetHeaderForm({
     sheet,
+    disabled = false,
     onNameChange,
     onHistoricoChange,
     onClassNameChange,
@@ -56,12 +58,14 @@ export function SheetHeaderForm({
                     value={sheet.name}
                     onChange={onNameChange}
                     className="sheet-field--wide"
+                    disabled={disabled}
                 />
                 <SheetFieldInput
                     label="Histórico"
                     value={sheet.historico ?? ""}
                     onChange={onHistoricoChange}
                     className="sheet-field--medium"
+                    disabled={disabled}
                 />
             </div>
             <div className="sheet-header-form__row sheet-header-form__row--secondary">
@@ -70,6 +74,7 @@ export function SheetHeaderForm({
                     value={sheet.className}
                     onChange={onClassNameChange}
                     className="sheet-field--class"
+                    disabled={disabled}
                 />
                 <SheetFieldInput
                     label="Nível"
@@ -78,18 +83,21 @@ export function SheetHeaderForm({
                     className="sheet-field--narrow"
                     inputMode="numeric"
                     centered
+                    disabled={disabled}
                 />
                 <SheetFieldInput
                     label="Idade"
                     value={sheet.idade ?? ""}
                     onChange={onIdadeChange}
                     className="sheet-field--narrow"
+                    disabled={disabled}
                 />
                 <SheetFieldInput
                     label="Sexo"
                     value={sheet.sexo ?? ""}
                     onChange={onSexoChange}
                     className="sheet-field--narrow"
+                    disabled={disabled}
                 />
             </div>
             <div className="sheet-header-form__row sheet-header-form__row--combat">
@@ -98,18 +106,21 @@ export function SheetHeaderForm({
                     value={String(combat.speed)}
                     onChange={(v) => onCombatStatChange("speed", parseOptionalInt(v, combat.speed))}
                     combatStat
+                    disabled={disabled}
                 />
                 <SheetFieldInput
                     label="Defesa"
                     value={String(combat.defense)}
                     onChange={(v) => onCombatStatChange("defense", parseOptionalInt(v, combat.defense))}
                     combatStat
+                    disabled={disabled}
                 />
                 <SheetFieldInput
                     label="Armadura"
                     value={String(combat.armor)}
                     onChange={(v) => onCombatStatChange("armor", parseOptionalInt(v, combat.armor))}
                     combatStat
+                    disabled={disabled}
                 />
                 <SheetFieldInput
                     label="Penalidade"
@@ -118,6 +129,7 @@ export function SheetHeaderForm({
                         onCombatStatChange("armorPenalty", parseOptionalInt(v, combat.armorPenalty))
                     }
                     combatStat
+                    disabled={disabled}
                 />
                 <ResourceValueMax
                     label="Saúde"
@@ -125,6 +137,7 @@ export function SheetHeaderForm({
                     max={sheet.hpMax}
                     variant="health"
                     compact
+                    disabled={disabled}
                     onCurrentChange={onHpCurrentChange}
                     onMaxChange={onHpMaxChange}
                 />
@@ -134,6 +147,7 @@ export function SheetHeaderForm({
                     max={sheet.mpMax}
                     variant="mana"
                     compact
+                    disabled={disabled}
                     onCurrentChange={onMpCurrentChange}
                     onMaxChange={onMpMaxChange}
                 />

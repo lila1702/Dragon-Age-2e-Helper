@@ -1,22 +1,31 @@
 import { useState } from "react";
 
 import { AttributeStripRow } from "./AttributeStripRow";
-import { RollResultBanner } from "./RollResultBanner";
 import { SheetHeaderForm } from "./SheetHeaderForm";
 import { SheetTabs } from "./SheetTabs";
+import { TokenSelectionBar } from "./TokenSelectionBar";
 import type { SheetTabId } from "./SheetTabs";
 
 import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entities/characterSheet";
-import type { StuntRollResult } from "../../domain/entities/diceRules";
+import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
 
 import "../styles/sheet.css";
 
 export interface CharacterSheetViewProps {
     sheet: CharacterSheet;
+    isObrAvailable: boolean;
     isObrReady: boolean;
-    lastRollResult: StuntRollResult | null;
-    rollError: string | null;
-    onRollAttribute: (attribute: Attribute, focusName?: string) => void;
+    tokenName: string | null;
+    selectionError: string | null;
+    isLoadingSheet: boolean;
+    needsCreateSheet: boolean;
+    canCreateSheet: boolean;
+    canEditSheet: boolean;
+    canRoll: boolean;
+    isReadOnlySheet: boolean;
+    isCreatingSheet: boolean;
+    onCreateSheet: () => void;
+    onRollAttribute: (attribute: Attribute, options?: AttributeRollOptions) => void;
     onNameChange: (value: string) => void;
     onHistoricoChange: (value: string) => void;
     onClassNameChange: (value: string) => void;
@@ -35,7 +44,6 @@ export interface CharacterSheetViewProps {
     onFocusBonusChange: (abbreviation: string, bonus: number) => void;
     onAttributeValueChange: (abbreviation: string, value: number) => void;
     onPrimaryChange: (abbreviation: string, isPrimary: boolean) => void;
-    onClearRoll?: () => void;
 }
 
 function PlaceholderTab({ label }: { label: string }) {
@@ -50,9 +58,17 @@ function PlaceholderTab({ label }: { label: string }) {
 
 export function CharacterSheetView({
     sheet,
-    isObrReady,
-    lastRollResult,
-    rollError,
+    isObrAvailable,
+    tokenName,
+    selectionError,
+    isLoadingSheet,
+    needsCreateSheet,
+    canCreateSheet,
+    canEditSheet,
+    canRoll,
+    isReadOnlySheet,
+    isCreatingSheet,
+    onCreateSheet,
     onRollAttribute,
     onNameChange,
     onHistoricoChange,
@@ -72,30 +88,30 @@ export function CharacterSheetView({
     onFocusBonusChange,
     onAttributeValueChange,
     onPrimaryChange,
-    onClearRoll,
 }: CharacterSheetViewProps) {
     const [activeTab, setActiveTab] = useState<SheetTabId>("atributos");
-    const [lastRollLabel, setLastRollLabel] = useState<string | undefined>();
 
-    const handleRoll = (attribute: Attribute, focusName?: string) => {
-        setLastRollLabel(
-            focusName ? `${attribute.abbreviation} (${focusName})` : attribute.abbreviation
-        );
-        onRollAttribute(attribute, focusName);
-    };
-
-    const handleDismissRoll = () => {
-        setLastRollLabel(undefined);
-        onClearRoll?.();
-    };
-
-    const rollsDisabled = !isObrReady;
+    const rollsDisabled = !canRoll;
+    const formDisabled = !canEditSheet;
 
     return (
         <div className="character-sheet">
             <div className="character-sheet__card">
+                <TokenSelectionBar
+                    isObrAvailable={isObrAvailable}
+                    isLoading={isLoadingSheet}
+                    tokenName={tokenName}
+                    selectionError={selectionError}
+                    needsCreateSheet={needsCreateSheet}
+                    canCreateSheet={canCreateSheet}
+                    isReadOnlySheet={isReadOnlySheet}
+                    isCreating={isCreatingSheet}
+                    onCreateSheet={onCreateSheet}
+                />
+
                 <SheetHeaderForm
                     sheet={sheet}
+                    disabled={formDisabled}
                     onNameChange={onNameChange}
                     onHistoricoChange={onHistoricoChange}
                     onClassNameChange={onClassNameChange}
@@ -116,20 +132,13 @@ export function CharacterSheetView({
                 />
 
                 <div className="character-sheet__panel" role="tabpanel">
-                    <RollResultBanner
-                        result={lastRollResult}
-                        error={rollError}
-                        attributeAbbreviation={lastRollLabel}
-                        onDismiss={onClearRoll ? handleDismissRoll : undefined}
-                    />
-
                     {activeTab === "atributos" && (
                         <div className="character-sheet__attributes" aria-label="Atributos">
                             {sheet.attributes.map((attribute) => (
                                 <AttributeStripRow
                                     key={attribute.abbreviation}
                                     attribute={attribute}
-                                    onRoll={handleRoll}
+                                    onRoll={onRollAttribute}
                                     onAddFocus={onAddFocus}
                                     onRemoveFocus={onRemoveFocus}
                                     onRenameFocus={onRenameFocus}

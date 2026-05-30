@@ -4,6 +4,7 @@ interface FocusListEditorProps {
     focusNames: string[];
     disabled?: boolean;
     onRollFocus: (focusName: string) => void;
+    onOpenSituationalRoll?: (focusName: string) => void;
     onAddFocus: (name: string) => void;
     onRemoveFocus: (name: string) => void;
     onRenameFocus: (oldName: string, newName: string) => void;
@@ -21,6 +22,7 @@ export function FocusListEditor({
     focusNames,
     disabled = false,
     onRollFocus,
+    onOpenSituationalRoll,
     onAddFocus,
     onRemoveFocus,
     onRenameFocus,
@@ -202,6 +204,19 @@ export function FocusListEditor({
                     >
                         Editar
                     </button>
+                    {onOpenSituationalRoll && (
+                        <button
+                            type="button"
+                            className="focus-context-menu__item"
+                            role="menuitem"
+                            onClick={() => {
+                                onOpenSituationalRoll(contextMenu.focusName);
+                                setContextMenu(null);
+                            }}
+                        >
+                            Rolagem Situacional…
+                        </button>
+                    )}
                     <button
                         type="button"
                         className="focus-context-menu__item focus-context-menu__item--danger"

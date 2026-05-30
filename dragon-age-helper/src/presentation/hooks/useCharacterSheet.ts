@@ -1,85 +1,51 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import OBR from "@owlbear-rodeo/sdk";
 
+import { createEmptySheet } from "../../domain/entities/createEmptySheet";
 import { owlbearService } from "../../infrastructure/owlbear/OwlbearService";
+import { showOwlbearNotification, showRollNotification } from "../../infrastructure/owlbear/rollNotification";
+import { DEV_MOCK_CHARACTER } from "../fixtures/devMockCharacter";
 import { POPOVER_HEIGHT, POPOVER_WIDTH } from "../layout/popoverLayout";
+import { useSelectedToken } from "./useSelectedToken";
 
 import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entities/characterSheet";
-import type { StuntRollResult } from "../../domain/entities/diceRules";
+import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
 
-const INITIAL_CHARACTER: CharacterSheet = {
-    id: "sheet_01",
-    tokenId: undefined,
-    name: "Loghain Mac Tir",
-    historico: "Soldado de Ferelden",
-    className: "Guerreiro",
-    level: 5,
-    idade: "42",
-    sexo: "Masculino",
-    combatStats: {
-        speed: 12,
-        defense: 14,
-        armor: 6,
-        armorPenalty: 2,
-    },
-    hpCurrent: 45,
-    hpMax: 45,
-    mpCurrent: 10,
-    mpMax: 10,
-    attributes: [
-        { name: "Astúcia", abbreviation: "AST", value: 1, focusNames: [] },
-        { name: "Comunicação", abbreviation: "COM", value: 2, focusNames: [] },
-        {
-            name: "Constituição",
-            abbreviation: "CON",
-            value: 3,
-            focusNames: ["Vigor"],
-        },
-        { name: "Destreza", abbreviation: "DES", value: 3, focusNames: [] },
-        {
-            name: "Força",
-            abbreviation: "FOR",
-            value: 4,
-            isPrimary: true,
-            focusNames: ["Espadas"],
-        },
-        { name: "Luta", abbreviation: "LUT", value: 0, isPrimary: true, focusNames: [] },
-        {
-            name: "Percepção",
-            abbreviation: "PER",
-            value: 1,
-            focusNames: ["Audição"],
-        },
-        {
-            name: "Precisão",
-            abbreviation: "PRE",
-            value: 1,
-            focusNames: ["Arcos"],
-        },
-        { name: "Vontade", abbreviation: "VON", value: 2, focusNames: [] },
-    ],
-};
+const SAVE_DEBOUNCE_MS = 600;
 
-function syncTrackers(sheet: CharacterSheet, isObrReady: boolean): void {
-    if (sheet.tokenId && isObrReady) {
-        void owlbearService.updateTokenTrackers(
-            sheet.tokenId,
-            sheet.hpCurrent,
-            sheet.hpMax,
-            sheet.mpCurrent,
-            sheet.mpMax
-        );
-    }
-}
+const SAVE_ERROR_MESSAGE =
+    "Não foi possível salvar a ficha. Verifique se você pode editar este token.";
 
 export function useCharacterSheet() {
-    const [characterSheet, setCharacterSheet] = useState<CharacterSheet>(INITIAL_CHARACTER);
     const [isObrAvailable] = useState(() => OBR.isAvailable);
-    const [isObrReady, setIsObrReady] = useState(
-        () => isObrAvailable && OBR.isReady
+    const [isObrReady, setIsObrReady] = useState(() => isObrAvailable && OBR.isReady);
+    const [characterSheet, setCharacterSheet] = useState<CharacterSheet>(
+        () => (isObrAvailable ? createEmptySheet("") : DEV_MOCK_CHARACTER)
     );
-    const [lastRollResult, setLastRollResult] = useState<StuntRollResult | null>(null);
-    const [rollError, setRollError] = useState<string | null>(null);
+    const [hasSheetOnToken, setHasSheetOnToken] = useState(!isObrAvailable);
+    const [isLoadingSheet, setIsLoadingSheet] = useState(false);
+    const [isCreatingSheet, setIsCreatingSheet] = useState(false);
+    const [canEditToken, setCanEditToken] = useState(!isObrAvailable);
+
+    const skipSaveRef = useRef(true);
+    const lastSelectionNoticeRef = useRef<string | null>(null);
+    const isRollingRef = useRef(false);
+    const loadedTokenIdRef = useRef<string | null>(null);
+    const previousTokenIdRef = useRef<string | null>(null);
+    const isDirtyRef = useRef(false);
+    const sheetSnapshotRef = useRef({
+        tokenId: null as string | null,
+        sheet: characterSheet,
+        hasSheet: false,
+    });
+
+    const { tokenId, tokenName, selectionError } = useSelectedToken(isObrReady);
+
+    sheetSnapshotRef.current = {
+        tokenId: loadedTokenIdRef.current,
+        sheet: characterSheet,
+        hasSheet: hasSheetOnToken,
+    };
 
     useEffect(() => {
         if (!isObrAvailable || isObrReady) return;
@@ -96,164 +62,396 @@ export function useCharacterSheet() {
         void OBR.action.setHeight(POPOVER_HEIGHT);
     }, [isObrReady]);
 
-    const rollAttribute = async (attribute: Attribute, focusName?: string) => {
-        if (!isObrReady) {
-            setRollError("Owlbear ainda não está pronto para rolagens.");
+    useEffect(() => {
+        if (!isObrAvailable || !isObrReady) return;
+
+        if (!selectionError) {
+            lastSelectionNoticeRef.current = null;
             return;
         }
 
-        setRollError(null);
+        if (lastSelectionNoticeRef.current === selectionError) return;
+
+        lastSelectionNoticeRef.current = selectionError;
+        void showOwlbearNotification(selectionError, "WARNING");
+    }, [isObrAvailable, isObrReady, selectionError]);
+
+    const flushSaveForToken = useCallback(async (targetTokenId: string) => {
+        const snap = sheetSnapshotRef.current;
+        if (snap.tokenId !== targetTokenId || !snap.hasSheet || !isDirtyRef.current) return;
+
+        const editable = await owlbearService.canEditToken(targetTokenId);
+        if (!editable) return;
+
+        try {
+            await owlbearService.saveCharacterSheet(targetTokenId, snap.sheet);
+            isDirtyRef.current = false;
+        } catch (error) {
+            console.error("Erro ao salvar ficha do token:", error);
+            void showOwlbearNotification(SAVE_ERROR_MESSAGE, "WARNING");
+        }
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            const snap = sheetSnapshotRef.current;
+            if (!snap.tokenId || !snap.hasSheet || !isDirtyRef.current) return;
+
+            void (async () => {
+                const editable = await owlbearService.canEditToken(snap.tokenId!);
+                if (!editable) return;
+                try {
+                    await owlbearService.saveCharacterSheet(snap.tokenId!, snap.sheet);
+                } catch (error) {
+                    console.error("Erro ao salvar ficha ao fechar:", error);
+                }
+            })();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!isObrAvailable) {
+            skipSaveRef.current = true;
+            loadedTokenIdRef.current = null;
+            isDirtyRef.current = false;
+            setCanEditToken(true);
+            setCharacterSheet(DEV_MOCK_CHARACTER);
+            setHasSheetOnToken(true);
+            return;
+        }
+
+        if (!isObrReady || !tokenId || selectionError) {
+            const tokenToFlush = loadedTokenIdRef.current;
+            previousTokenIdRef.current = null;
+            if (tokenToFlush) {
+                void flushSaveForToken(tokenToFlush);
+            }
+            skipSaveRef.current = true;
+            loadedTokenIdRef.current = null;
+            isDirtyRef.current = false;
+            setCanEditToken(false);
+            setHasSheetOnToken(false);
+            return;
+        }
+
+        if (tokenId === loadedTokenIdRef.current) {
+            return;
+        }
+
+        let cancelled = false;
+        const loadForToken = tokenId;
+        const tokenToFlush = previousTokenIdRef.current;
+        previousTokenIdRef.current = loadForToken;
+
+        skipSaveRef.current = true;
+        loadedTokenIdRef.current = null;
+        isDirtyRef.current = false;
+        setIsLoadingSheet(true);
+
+        void (async () => {
+            try {
+                if (tokenToFlush && tokenToFlush !== loadForToken) {
+                    await flushSaveForToken(tokenToFlush);
+                }
+                if (cancelled) return;
+
+                const [loaded, editable] = await Promise.all([
+                    owlbearService.loadCharacterSheet(loadForToken),
+                    owlbearService.canEditToken(loadForToken),
+                ]);
+
+                if (cancelled) return;
+
+                setCanEditToken(editable);
+                skipSaveRef.current = true;
+                loadedTokenIdRef.current = loadForToken;
+                isDirtyRef.current = false;
+
+                if (loaded) {
+                    setHasSheetOnToken(true);
+                    setCharacterSheet(loaded);
+                } else {
+                    setHasSheetOnToken(false);
+                    setCharacterSheet(createEmptySheet(loadForToken));
+                }
+            } catch (error) {
+                console.error("Erro ao carregar ficha do token:", error);
+                if (!cancelled) {
+                    loadedTokenIdRef.current = loadForToken;
+                    isDirtyRef.current = false;
+                    setHasSheetOnToken(false);
+                    setCharacterSheet(createEmptySheet(loadForToken));
+                }
+            } finally {
+                if (!cancelled) {
+                    setIsLoadingSheet(false);
+                    queueMicrotask(() => {
+                        skipSaveRef.current = false;
+                    });
+                }
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [isObrAvailable, isObrReady, tokenId, selectionError, flushSaveForToken]);
+
+    useEffect(() => {
+        if (!isObrReady || !tokenId || !hasSheetOnToken || skipSaveRef.current) return;
+        if (isLoadingSheet || loadedTokenIdRef.current !== tokenId || !canEditToken) return;
+        if (!isDirtyRef.current) return;
+
+        const saveTokenId = tokenId;
+
+        const persist = async () => {
+            if (!isDirtyRef.current || loadedTokenIdRef.current !== saveTokenId) return;
+
+            const sheetToSave = sheetSnapshotRef.current.sheet;
+            try {
+                await owlbearService.saveCharacterSheet(saveTokenId, sheetToSave);
+                isDirtyRef.current = false;
+            } catch (error) {
+                console.error("Erro ao salvar ficha do token:", error);
+                void showOwlbearNotification(SAVE_ERROR_MESSAGE, "WARNING");
+            }
+        };
+
+        const timer = window.setTimeout(() => void persist(), SAVE_DEBOUNCE_MS);
+
+        return () => {
+            window.clearTimeout(timer);
+        };
+    }, [characterSheet, hasSheetOnToken, isObrReady, tokenId, isLoadingSheet, canEditToken]);
+
+    const canEditSheet =
+        (!isObrAvailable && hasSheetOnToken) ||
+        (isObrReady &&
+            !!tokenId &&
+            !selectionError &&
+            hasSheetOnToken &&
+            !isLoadingSheet &&
+            canEditToken);
+
+    const isReadOnlySheet =
+        isObrAvailable &&
+        isObrReady &&
+        !!tokenId &&
+        !selectionError &&
+        hasSheetOnToken &&
+        !isLoadingSheet &&
+        !canEditToken;
+
+    const needsCreateSheet =
+        isObrAvailable &&
+        isObrReady &&
+        !!tokenId &&
+        !selectionError &&
+        !hasSheetOnToken &&
+        !isLoadingSheet;
+
+    const canCreateSheet = needsCreateSheet && canEditToken;
+
+    const createSheetOnToken = useCallback(async () => {
+        if (!tokenId || !isObrReady || !canEditToken) return;
+
+        setIsCreatingSheet(true);
+        try {
+            const sheet = createEmptySheet(tokenId);
+            skipSaveRef.current = true;
+            await owlbearService.saveCharacterSheet(tokenId, sheet);
+            loadedTokenIdRef.current = tokenId;
+            isDirtyRef.current = false;
+            setCharacterSheet(sheet);
+            setHasSheetOnToken(true);
+            queueMicrotask(() => {
+                skipSaveRef.current = false;
+            });
+        } catch (error) {
+            console.error("Erro ao criar ficha no token:", error);
+            void showOwlbearNotification(SAVE_ERROR_MESSAGE, "WARNING");
+        } finally {
+            setIsCreatingSheet(false);
+        }
+    }, [tokenId, isObrReady, canEditToken]);
+
+    const rollAttribute = async (attribute: Attribute, options?: AttributeRollOptions) => {
+        const canRoll = !isObrAvailable || isObrReady;
+        if (!canRoll) {
+            void showOwlbearNotification("Owlbear ainda não está pronto para rolagens.", "WARNING");
+            return;
+        }
+
+        if (!canEditSheet) return;
+
+        if (isRollingRef.current) {
+            void showOwlbearNotification("Aguarde a rolagem anterior terminar.", "INFO");
+            return;
+        }
+
+        isRollingRef.current = true;
 
         const rollAttributePayload: Attribute = {
             ...attribute,
-            activeFocusName: focusName,
+            activeFocusName: options?.focusName,
         };
 
+        const rollLabel = options?.focusName
+            ? `${attribute.abbreviation} (${options.focusName})`
+            : attribute.abbreviation;
+
         try {
-            const result = await owlbearService.rollAttributeTest(rollAttributePayload, {
-                focusName,
-            });
-            setLastRollResult(result);
+            const result = await owlbearService.rollAttributeTest(rollAttributePayload, options);
+            await showRollNotification(rollLabel, result);
         } catch (error) {
             console.error("Erro ao rolar teste de atributo:", error);
-            setRollError("Não foi possível rolar. Verifique se a extensão Dice+ está ativa na sala.");
+            const fallback = isObrAvailable
+                ? "Não foi possível rolar. Verifique se a extensão Dice+ está ativa na sala."
+                : "Não foi possível simular a rolagem.";
+            const message = error instanceof Error ? error.message : fallback;
+            void showOwlbearNotification(message, "WARNING");
+        } finally {
+            isRollingRef.current = false;
         }
     };
 
-    const clearLastRoll = () => {
-        setLastRollResult(null);
-        setRollError(null);
-    };
+    const updateSheet = useCallback(
+        (updater: (prev: CharacterSheet) => CharacterSheet) => {
+            if (!canEditSheet) return;
+            isDirtyRef.current = true;
+            setCharacterSheet(updater);
+        },
+        [canEditSheet]
+    );
 
-    const setName = useCallback((name: string) => {
-        setCharacterSheet((prev) => ({ ...prev, name }));
-    }, []);
+    const setName = useCallback((name: string) => updateSheet((prev) => ({ ...prev, name })), [updateSheet]);
 
-    const setHistorico = useCallback((historico: string) => {
-        setCharacterSheet((prev) => ({ ...prev, historico }));
-    }, []);
+    const setHistorico = useCallback(
+        (historico: string) => updateSheet((prev) => ({ ...prev, historico })),
+        [updateSheet]
+    );
 
-    const setClassName = useCallback((className: string) => {
-        setCharacterSheet((prev) => ({ ...prev, className }));
-    }, []);
+    const setClassName = useCallback(
+        (className: string) => updateSheet((prev) => ({ ...prev, className })),
+        [updateSheet]
+    );
 
-    const setLevel = useCallback((level: number) => {
-        setCharacterSheet((prev) => ({
-            ...prev,
-            level: Math.max(1, level),
-        }));
-    }, []);
+    const setLevel = useCallback(
+        (level: number) =>
+            updateSheet((prev) => ({
+                ...prev,
+                level: Math.max(1, level),
+            })),
+        [updateSheet]
+    );
 
-    const setIdade = useCallback((idade: string) => {
-        setCharacterSheet((prev) => ({ ...prev, idade }));
-    }, []);
+    const setIdade = useCallback(
+        (idade: string) => updateSheet((prev) => ({ ...prev, idade })),
+        [updateSheet]
+    );
 
-    const setSexo = useCallback((sexo: string) => {
-        setCharacterSheet((prev) => ({ ...prev, sexo }));
-    }, []);
+    const setSexo = useCallback(
+        (sexo: string) => updateSheet((prev) => ({ ...prev, sexo })),
+        [updateSheet]
+    );
 
-    const setCombatStat = useCallback((stat: keyof CombatStats, value: number) => {
-        setCharacterSheet((prev) => ({
-            ...prev,
-            combatStats: {
-                speed: 0,
-                defense: 0,
-                armor: 0,
-                armorPenalty: 0,
-                ...prev.combatStats,
-                [stat]: value,
-            },
-        }));
-    }, []);
+    const setCombatStat = useCallback(
+        (stat: keyof CombatStats, value: number) =>
+            updateSheet((prev) => ({
+                ...prev,
+                combatStats: {
+                    speed: 0,
+                    defense: 0,
+                    armor: 0,
+                    armorPenalty: 0,
+                    ...prev.combatStats,
+                    [stat]: value,
+                },
+            })),
+        [updateSheet]
+    );
 
-    const setAttributeValue = useCallback((abbreviation: string, value: number) => {
-        setCharacterSheet((prev) => ({
-            ...prev,
-            attributes: prev.attributes.map((attr) =>
-                attr.abbreviation === abbreviation ? { ...attr, value } : attr
-            ),
-        }));
-    }, []);
+    const setAttributeValue = useCallback(
+        (abbreviation: string, value: number) =>
+            updateSheet((prev) => ({
+                ...prev,
+                attributes: prev.attributes.map((attr) =>
+                    attr.abbreviation === abbreviation ? { ...attr, value } : attr
+                ),
+            })),
+        [updateSheet]
+    );
 
     const setHpCurrent = useCallback(
-        (value: number) => {
-            setCharacterSheet((prev) => {
+        (value: number) =>
+            updateSheet((prev) => {
                 const hpCurrent = Math.max(0, Math.min(prev.hpMax, value));
-                const next = { ...prev, hpCurrent };
-                syncTrackers(next, isObrReady);
-                return next;
-            });
-        },
-        [isObrReady]
+                return { ...prev, hpCurrent };
+            }),
+        [updateSheet]
     );
 
     const setHpMax = useCallback(
-        (value: number) => {
-            setCharacterSheet((prev) => {
+        (value: number) =>
+            updateSheet((prev) => {
                 const hpMax = Math.max(0, value);
                 const hpCurrent = Math.min(prev.hpCurrent, hpMax);
-                const next = { ...prev, hpMax, hpCurrent };
-                syncTrackers(next, isObrReady);
-                return next;
-            });
-        },
-        [isObrReady]
+                return { ...prev, hpMax, hpCurrent };
+            }),
+        [updateSheet]
     );
 
     const setMpCurrent = useCallback(
-        (value: number) => {
-            setCharacterSheet((prev) => {
+        (value: number) =>
+            updateSheet((prev) => {
                 const mpCurrent = Math.max(0, Math.min(prev.mpMax, value));
-                const next = { ...prev, mpCurrent };
-                syncTrackers(next, isObrReady);
-                return next;
-            });
-        },
-        [isObrReady]
+                return { ...prev, mpCurrent };
+            }),
+        [updateSheet]
     );
 
     const setMpMax = useCallback(
-        (value: number) => {
-            setCharacterSheet((prev) => {
+        (value: number) =>
+            updateSheet((prev) => {
                 const mpMax = Math.max(0, value);
                 const mpCurrent = Math.min(prev.mpCurrent, mpMax);
-                const next = { ...prev, mpMax, mpCurrent };
-                syncTrackers(next, isObrReady);
-                return next;
-            });
-        },
-        [isObrReady]
+                return { ...prev, mpMax, mpCurrent };
+            }),
+        [updateSheet]
     );
 
-    const addFocus = useCallback((abbreviation: string, focusName: string) => {
-        setCharacterSheet((prev) => ({
-            ...prev,
-            attributes: prev.attributes.map((attr) => {
-                if (attr.abbreviation !== abbreviation) return attr;
-                const names = attr.focusNames ?? [];
-                if (names.includes(focusName)) return attr;
-                return { ...attr, focusNames: [...names, focusName] };
-            }),
-        }));
-    }, []);
+    const addFocus = useCallback(
+        (abbreviation: string, focusName: string) =>
+            updateSheet((prev) => ({
+                ...prev,
+                attributes: prev.attributes.map((attr) => {
+                    if (attr.abbreviation !== abbreviation) return attr;
+                    const names = attr.focusNames ?? [];
+                    if (names.includes(focusName)) return attr;
+                    return { ...attr, focusNames: [...names, focusName] };
+                }),
+            })),
+        [updateSheet]
+    );
 
-    const removeFocus = useCallback((abbreviation: string, focusName: string) => {
-        setCharacterSheet((prev) => ({
-            ...prev,
-            attributes: prev.attributes.map((attr) => {
-                if (attr.abbreviation !== abbreviation) return attr;
-                const names = (attr.focusNames ?? []).filter((n) => n !== focusName);
-                return { ...attr, focusNames: names };
-            }),
-        }));
-    }, []);
+    const removeFocus = useCallback(
+        (abbreviation: string, focusName: string) =>
+            updateSheet((prev) => ({
+                ...prev,
+                attributes: prev.attributes.map((attr) => {
+                    if (attr.abbreviation !== abbreviation) return attr;
+                    const names = (attr.focusNames ?? []).filter((n) => n !== focusName);
+                    return { ...attr, focusNames: names };
+                }),
+            })),
+        [updateSheet]
+    );
 
     const renameFocus = useCallback(
         (abbreviation: string, oldName: string, newName: string) => {
             const trimmed = newName.trim();
             if (!trimmed || trimmed === oldName) return;
-
-            setCharacterSheet((prev) => ({
+            updateSheet((prev) => ({
                 ...prev,
                 attributes: prev.attributes.map((attr) => {
                     if (attr.abbreviation !== abbreviation) return attr;
@@ -266,14 +464,13 @@ export function useCharacterSheet() {
                 }),
             }));
         },
-        []
+        [updateSheet]
     );
 
     const reorderFocus = useCallback(
         (abbreviation: string, fromIndex: number, toIndex: number) => {
             if (fromIndex === toIndex) return;
-
-            setCharacterSheet((prev) => ({
+            updateSheet((prev) => ({
                 ...prev,
                 attributes: prev.attributes.map((attr) => {
                     if (attr.abbreviation !== abbreviation) return attr;
@@ -285,34 +482,49 @@ export function useCharacterSheet() {
                 }),
             }));
         },
-        []
+        [updateSheet]
     );
 
-    const setFocusBonus = useCallback((abbreviation: string, bonus: number) => {
-        setCharacterSheet((prev) => ({
-            ...prev,
-            attributes: prev.attributes.map((attr) =>
-                attr.abbreviation === abbreviation ? { ...attr, focusBonus: bonus } : attr
-            ),
-        }));
-    }, []);
+    const setFocusBonus = useCallback(
+        (abbreviation: string, bonus: number) =>
+            updateSheet((prev) => ({
+                ...prev,
+                attributes: prev.attributes.map((attr) =>
+                    attr.abbreviation === abbreviation ? { ...attr, focusBonus: bonus } : attr
+                ),
+            })),
+        [updateSheet]
+    );
 
-    const setAttributePrimary = useCallback((abbreviation: string, isPrimary: boolean) => {
-        setCharacterSheet((prev) => ({
-            ...prev,
-            attributes: prev.attributes.map((attr) =>
-                attr.abbreviation === abbreviation ? { ...attr, isPrimary } : attr
-            ),
-        }));
-    }, []);
+    const setAttributePrimary = useCallback(
+        (abbreviation: string, isPrimary: boolean) =>
+            updateSheet((prev) => ({
+                ...prev,
+                attributes: prev.attributes.map((attr) =>
+                    attr.abbreviation === abbreviation ? { ...attr, isPrimary } : attr
+                ),
+            })),
+        [updateSheet]
+    );
+
+    const canRoll = canEditSheet && (!isObrAvailable || isObrReady);
 
     return {
         characterSheet,
+        isObrAvailable,
         isObrReady,
-        lastRollResult,
-        rollError,
+        tokenId,
+        tokenName,
+        selectionError,
+        isLoadingSheet,
+        needsCreateSheet,
+        canCreateSheet,
+        canEditSheet,
+        canRoll,
+        isReadOnlySheet,
+        isCreatingSheet,
+        createSheetOnToken,
         rollAttribute,
-        clearLastRoll,
         setName,
         setHistorico,
         setClassName,

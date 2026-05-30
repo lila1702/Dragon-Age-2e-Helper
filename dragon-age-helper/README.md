@@ -1,73 +1,38 @@
-# React + TypeScript + Vite
+# Dragon Age 2e Helper
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Extensão Owlbear Rodeo 2.0 para fichas e rolagens Dragon Age 2e (homebrew Fantasy Age 2e).
 
-Currently, two official plugins are available:
+## Desenvolvimento local
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd dragon-age-helper
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Abra `http://localhost:5173` no navegador. Fora do Owlbear, a ficha usa dados de exemplo e rolagens simuladas (3d6 aleatório).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Para testar no Owlbear com dev server, use a URL do manifest apontando para seu host (ex.: ngrok) conforme o [tutorial Hello World](https://docs.owlbear.rodeo/extensions/tutorial-hello-world/create-your-site/).
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Deploy (GitHub Pages)
+
+1. Ative **GitHub Pages** no repositório: Settings → Pages → Source: **GitHub Actions**
+2. Faça push na branch `main` (ou dispare o workflow manualmente)
+3. A extensão ficará em: `https://lila1702.github.io/Dragon-Age-2e-Helper/`
+4. URL do manifest para instalar no Owlbear:
+
+   `https://lila1702.github.io/Dragon-Age-2e-Helper/manifest.json`
+
+### Instalar na mesa
+
+1. Perfil Owlbear → **Add Extension** → cole a URL do manifest
+2. Na sala → **Extras** → **Extensions** → ative **Dragon Age 2e Helper**
+3. Ative também a extensão **Dice+** (oficial) para rolagens 3d6 na mesa
+
+## Épico 3 — entregas
+
+- Notificações Owlbear (`OBR.notification`) ao rolar atributos
+- Tema claro fixo (estilo planilha), independente do tema do Owlbear
+- Rolagem simulada fora do Owlbear (`devDiceRoll`)
+- Hook `usePlayerRole` (preparação para UI de GM)
+- Build de produção + workflow GitHub Pages

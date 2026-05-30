@@ -1,16 +1,25 @@
 import { CharacterSheetView } from "./presentation/components/CharacterSheetView";
 import { useCharacterSheet } from "./presentation/hooks/useCharacterSheet";
+import { usePlayerRole } from "./presentation/hooks/usePlayerRole";
 
 import "./index.css";
 
 function App() {
     const {
         characterSheet,
+        isObrAvailable,
         isObrReady,
-        lastRollResult,
-        rollError,
+        tokenName,
+        selectionError,
+        isLoadingSheet,
+        needsCreateSheet,
+        canCreateSheet,
+        canEditSheet,
+        canRoll,
+        isReadOnlySheet,
+        isCreatingSheet,
+        createSheetOnToken,
         rollAttribute,
-        clearLastRoll,
         setName,
         setHistorico,
         setClassName,
@@ -31,12 +40,23 @@ function App() {
         setAttributePrimary,
     } = useCharacterSheet();
 
+    usePlayerRole(isObrReady);
+
     return (
         <CharacterSheetView
             sheet={characterSheet}
+            isObrAvailable={isObrAvailable}
             isObrReady={isObrReady}
-            lastRollResult={lastRollResult}
-            rollError={rollError}
+            tokenName={tokenName}
+            selectionError={selectionError}
+            isLoadingSheet={isLoadingSheet}
+            needsCreateSheet={needsCreateSheet}
+            canCreateSheet={canCreateSheet}
+            canEditSheet={canEditSheet}
+            canRoll={canRoll}
+            isReadOnlySheet={isReadOnlySheet}
+            isCreatingSheet={isCreatingSheet}
+            onCreateSheet={() => void createSheetOnToken()}
             onRollAttribute={rollAttribute}
             onNameChange={setName}
             onHistoricoChange={setHistorico}
@@ -56,7 +76,6 @@ function App() {
             onReorderFocus={reorderFocus}
             onFocusBonusChange={setFocusBonus}
             onPrimaryChange={setAttributePrimary}
-            onClearRoll={clearLastRoll}
         />
     );
 }

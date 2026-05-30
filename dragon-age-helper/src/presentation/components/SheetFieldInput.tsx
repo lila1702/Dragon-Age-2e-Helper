@@ -9,6 +9,7 @@ interface SheetFieldInputProps {
     ariaLabel?: string;
     centered?: boolean;
     large?: boolean;
+    disabled?: boolean;
 }
 
 export function SheetFieldInput({
@@ -22,6 +23,7 @@ export function SheetFieldInput({
     ariaLabel,
     centered = false,
     large = false,
+    disabled = false,
 }: SheetFieldInputProps) {
     const combatClass = combatStat ? "sheet-field--combat-stat" : "";
     const bodyClass = [
@@ -45,6 +47,7 @@ export function SheetFieldInput({
                     inputMode={inputMode}
                     placeholder={placeholder}
                     aria-label={ariaLabel ?? label}
+                    disabled={disabled}
                     onChange={(e) => onChange(e.target.value)}
                 />
             </div>

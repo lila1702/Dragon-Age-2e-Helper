@@ -7,6 +7,7 @@ interface AttributeValueInputProps {
     disabled?: boolean;
     onValueChange: (abbreviation: string, value: number) => void;
     onRoll: (attribute: Attribute) => void;
+    onOpenSituationalRoll?: () => void;
 }
 
 function parseAttributeValue(raw: string, fallback: number): number {
@@ -29,6 +30,7 @@ export function AttributeValueInput({
     disabled = false,
     onValueChange,
     onRoll,
+    onOpenSituationalRoll,
 }: AttributeValueInputProps) {
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -124,6 +126,19 @@ export function AttributeValueInput({
                     >
                         Editar
                     </button>
+                    {onOpenSituationalRoll && (
+                        <button
+                            type="button"
+                            className="focus-context-menu__item"
+                            role="menuitem"
+                            onClick={() => {
+                                setContextMenu(null);
+                                onOpenSituationalRoll();
+                            }}
+                        >
+                            Rolagem Situacional…
+                        </button>
+                    )}
                 </div>
             )}
         </>

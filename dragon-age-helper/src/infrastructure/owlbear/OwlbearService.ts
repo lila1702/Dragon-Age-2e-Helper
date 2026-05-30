@@ -1,18 +1,24 @@
 import OBR from "@owlbear-rodeo/sdk";
 import { calculateDicePlusStunt } from "../../domain/entities/diceRules";
+import { normalizeCharacterSheet } from "../../domain/entities/normalizeCharacterSheet";
 
-import { METADATA_KEYS } from "./metadataKeys";
+import { METADATA_KEYS, SCHEMA_VERSION } from "./metadataKeys";
+import { SELECTION_ERRORS } from "./selectionErrors";
+import { applySheetMetadataToItem } from "./applySheetToItem";
+import { devDiceRoll } from "./devDiceRoll";
+import { rollDicePlus } from "./dicePlusClient";
+import { resolveCanEditToken } from "./tokenAccess";
 import { setTokenBarValues } from "./tokenBars";
 
-import type { IOwlbearService } from "./IOwlbearService";
-import { getAttributeRollBonus } from "../../domain/entities/attributeRoll";
+import type { IOwlbearService, SelectionResult } from "./IOwlbearService";
+import {
+    buildAttributeTestDiceNotation,
+    getAttributeRollBreakdown,
+} from "../../domain/entities/attributeRoll";
 
 import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
-import type { Attribute } from "../../domain/entities/characterSheet";
+import type { Attribute, CharacterSheet } from "../../domain/entities/characterSheet";
 import type { StuntRollResult } from "../../domain/entities/diceRules";
-import type { OwlbearSdkWithDice } from "./owlbear-dice";
-
-const obr = OBR as OwlbearSdkWithDice;
 
 export class OwlbearService implements IOwlbearService {
     onReady(callback: () => void): void {
@@ -22,23 +28,132 @@ export class OwlbearService implements IOwlbearService {
         });
     }
 
+    async resolveSelection(): Promise<SelectionResult> {
+        const selection = (await OBR.player.getSelection()) ?? [];
+
+        if (selection.length === 0) {
+            return { tokenId: null, error: SELECTION_ERRORS.NO_TOKEN };
+        }
+        if (selection.length > 1) {
+            return { tokenId: null, error: SELECTION_ERRORS.MULTIPLE };
+        }
+
+        return { tokenId: selection[0], error: SELECTION_ERRORS.NONE };
+    }
+
+    async getTokenDisplayName(tokenId: string): Promise<string | null> {
+        const items = await OBR.scene.items.getItems([tokenId]);
+        const item = items[0];
+        if (!item) return null;
+        return item.name?.trim() || null;
+    }
+
+    async isCurrentPlayerGm(): Promise<boolean> {
+        const role = await OBR.player.getRole();
+        return role === "GM";
+    }
+
+    async canEditToken(tokenId: string): Promise<boolean> {
+        return resolveCanEditToken(tokenId);
+    }
+
     async rollAttributeTest(
         attribute: Attribute,
         options?: AttributeRollOptions
     ): Promise<StuntRollResult> {
-        const results = await obr.dice.roll([
-            { die: "D6", count: 1, name: "Vermelho" },
-            { die: "D6", count: 1, name: "Vermelho" },
-            { die: "D6", count: 1, name: "Dragão" },
-        ]);
+        const breakdown = getAttributeRollBreakdown(attribute, options);
+        const diceNotation = buildAttributeTestDiceNotation(breakdown);
 
-        const bonusTotal = getAttributeRollBonus(attribute.value, attribute, options);
+        const results = OBR.isAvailable
+            ? await rollDicePlus(diceNotation)
+            : devDiceRoll();
+
+        const diceTotal = results.orderedD6.reduce((sum, value) => sum + value, 0);
+        const modifierTotal =
+            breakdown.attributeValue + breakdown.focusBonus + breakdown.situationalModifier;
+
         const resultadoCalculado = calculateDicePlusStunt(
             results.orderedD6,
-            results.totalValue + bonusTotal
+            diceTotal + modifierTotal,
+            {
+                attribute: breakdown.attributeValue,
+                focus: breakdown.focusBonus,
+                situational: breakdown.situationalModifier,
+            }
         );
 
         return resultadoCalculado;
+    }
+
+    async loadCharacterSheet(tokenId: string): Promise<CharacterSheet | null> {
+        const items = await OBR.scene.items.getItems([tokenId]);
+        const item = items[0];
+        if (!item) return null;
+
+        let raw: unknown = item.metadata?.[METADATA_KEYS.SHEET];
+        if (raw === undefined || raw === null) return null;
+
+        if (typeof raw === "string") {
+            try {
+                raw = JSON.parse(raw) as unknown;
+            } catch {
+                console.warn("Metadata da ficha não é JSON válido:", raw);
+                return null;
+            }
+        }
+
+        return normalizeCharacterSheet(raw, tokenId);
+    }
+
+    async saveCharacterSheet(tokenId: string, sheet: CharacterSheet): Promise<void> {
+        const sheetToSave: CharacterSheet = {
+            ...sheet,
+            tokenId,
+        };
+
+        const items = await OBR.scene.items.getItems([tokenId]);
+        if (items.length === 0) {
+            throw new Error("Token não encontrado na cena.");
+        }
+
+        const actingPlayerId = OBR.player.id;
+
+        try {
+            await OBR.scene.items.updateItems(items, (draft) => {
+                for (const item of draft) {
+                    applySheetMetadataToItem(item, sheetToSave, actingPlayerId);
+                }
+                return draft;
+            });
+        } catch (error) {
+            console.error("Falha ao gravar metadata no token:", error);
+
+            try {
+                await OBR.scene.items.updateItems(items, (draft) => {
+                    for (const item of draft) {
+                        const existingOwner = item.createdUserId ?? actingPlayerId;
+                        item.metadata = {
+                            ...item.metadata,
+                            [METADATA_KEYS.SHEET]: JSON.parse(
+                                JSON.stringify(sheetToSave)
+                            ) as CharacterSheet,
+                            [METADATA_KEYS.SCHEMA_VERSION]: SCHEMA_VERSION,
+                            [METADATA_KEYS.TRACKERS]: {
+                                hp: { current: sheetToSave.hpCurrent, max: sheetToSave.hpMax },
+                                mp: { current: sheetToSave.mpCurrent, max: sheetToSave.mpMax },
+                            },
+                            [METADATA_KEYS.OWNER_PLAYER_ID]: existingOwner,
+                        };
+                    }
+                    return draft;
+                });
+            } catch (retryError) {
+                console.error("Falha ao gravar ficha (sem barras HP/MP):", retryError);
+                throw retryError instanceof Error
+                    ? retryError
+                    : new Error("Não foi possível salvar a ficha neste token.");
+            }
+        }
     }
 
     async updateTokenTrackers(
@@ -48,19 +163,22 @@ export class OwlbearService implements IOwlbearService {
         mpCurrent: number,
         mpMax: number
     ): Promise<void> {
-        await OBR.scene.items.updateItems([tokenId], (items) => {
-            for (const item of items) {
-                if (item.type === "CHARACTER" || item.type === "PROP") {
-                    if (!item.metadata) item.metadata = {};
+        const items = await OBR.scene.items.getItems([tokenId]);
+        if (items.length === 0) return;
 
-                    item.metadata[METADATA_KEYS.TRACKERS] = {
+        await OBR.scene.items.updateItems(items, (draft) => {
+            for (const item of draft) {
+                item.metadata = {
+                    ...item.metadata,
+                    [METADATA_KEYS.TRACKERS]: {
                         hp: { current: hpCurrent, max: hpMax },
                         mp: { current: mpCurrent, max: mpMax },
-                    };
+                    },
+                };
 
-                    setTokenBarValues(item, hpCurrent, hpMax, mpCurrent, mpMax);
-                }
+                setTokenBarValues(item, hpCurrent, hpMax, mpCurrent, mpMax);
             }
+            return draft;
         });
     }
 }

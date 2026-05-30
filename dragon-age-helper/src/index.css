@@ -10,8 +10,8 @@
     --da-muted: #5c5c5c;
     --da-outer-bg: #1a1a1a;
     --da-toolbar-bg: #2d2d2d;
-    --popover-width: 560px;
-    --popover-height: 860px;
+    --popover-width: 680px;
+    --popover-height: 900px;
     --sans: system-ui, "Segoe UI", Roboto, sans-serif;
     --font-sheet: "Merriweather", Georgia, "Times New Roman", serif;
 
@@ -34,6 +34,7 @@ body {
     margin: 0;
     min-height: 100svh;
     background: var(--da-white);
+    color: var(--da-black);
 }
 
 #root {
@@ -51,4 +52,17 @@ p {
 
 button {
     font-family: inherit;
+}
+
+input,
+textarea,
+select {
+    color: var(--da-black);
+    background: var(--da-white);
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+    color: var(--da-muted);
 }
