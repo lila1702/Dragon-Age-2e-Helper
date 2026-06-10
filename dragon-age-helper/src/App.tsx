@@ -1,122 +1,85 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { CharacterSheetView } from "./presentation/components/CharacterSheetView";
+import { useCharacterSheet } from "./presentation/hooks/useCharacterSheet";
+import { usePlayerRole } from "./presentation/hooks/usePlayerRole";
+
+import "./index.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+    const {
+        characterSheet,
+        isObrAvailable,
+        isObrReady,
+        tokenName,
+        selectionError,
+        isLoadingSheet,
+        needsCreateSheet,
+        canCreateSheet,
+        canEditSheet,
+        canRoll,
+        isReadOnlySheet,
+        isCreatingSheet,
+        createSheetOnToken,
+        rollAttribute,
+        setName,
+        setHistorico,
+        setClassName,
+        setLevel,
+        setIdade,
+        setSexo,
+        setCombatStat,
+        setAttributeValue,
+        setHpCurrent,
+        setHpMax,
+        setMpCurrent,
+        setMpMax,
+        setResourceEditing,
+        addFocus,
+        removeFocus,
+        renameFocus,
+        reorderFocus,
+        setFocusBonus,
+        setAttributePrimary,
+    } = useCharacterSheet();
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    usePlayerRole(isObrReady);
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    return (
+        <CharacterSheetView
+            sheet={characterSheet}
+            isObrAvailable={isObrAvailable}
+            isObrReady={isObrReady}
+            tokenName={tokenName}
+            selectionError={selectionError}
+            isLoadingSheet={isLoadingSheet}
+            needsCreateSheet={needsCreateSheet}
+            canCreateSheet={canCreateSheet}
+            canEditSheet={canEditSheet}
+            canRoll={canRoll}
+            isReadOnlySheet={isReadOnlySheet}
+            isCreatingSheet={isCreatingSheet}
+            onCreateSheet={() => void createSheetOnToken()}
+            onRollAttribute={rollAttribute}
+            onNameChange={setName}
+            onHistoricoChange={setHistorico}
+            onClassNameChange={setClassName}
+            onLevelChange={setLevel}
+            onIdadeChange={setIdade}
+            onSexoChange={setSexo}
+            onCombatStatChange={setCombatStat}
+            onAttributeValueChange={setAttributeValue}
+            onHpCurrentChange={setHpCurrent}
+            onHpMaxChange={setHpMax}
+            onMpCurrentChange={setMpCurrent}
+            onMpMaxChange={setMpMax}
+            onResourceEditingChange={setResourceEditing}
+            onAddFocus={addFocus}
+            onRemoveFocus={removeFocus}
+            onRenameFocus={renameFocus}
+            onReorderFocus={reorderFocus}
+            onFocusBonusChange={setFocusBonus}
+            onPrimaryChange={setAttributePrimary}
+        />
+    );
 }
 
-export default App
+export default App;

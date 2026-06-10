@@ -2,6 +2,15 @@
   "name": "Dragon Age 2e Helper",
   "version": "1.0.0",
   "manifest_version": 1,
-  "tags": ["utility", "dice"],
-  "icon": "/vite.svg"
+  "description": "Fichas e rolagens Dragon Age 2e",
+  "author": "Dragon Age 2e Helper",
+  "homepage_url": "https://github.com/lila1702/Dragon-Age-2e-Helper",
+  "icon": "/icon.svg",
+  "action": {
+    "title": "Dragon Age 2e",
+    "icon": "/dragon-svgrepo-com.svg",
+    "popover": "/",
+    "width": 680,
+    "height": 860
+  }
 }
