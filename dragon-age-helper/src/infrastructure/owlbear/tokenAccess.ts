@@ -4,18 +4,20 @@ import { METADATA_KEYS } from "./metadataKeys";
 
 import type { Item } from "@owlbear-rodeo/sdk";
 
-export function getSheetOwnerId(item: Item): string | null {
+export function readMetadataOwnerId(item: Item): string | null {
     const metaOwner = item.metadata?.[METADATA_KEYS.OWNER_PLAYER_ID];
     if (typeof metaOwner === "string" && metaOwner.length > 0) {
         return metaOwner;
     }
+    return null;
+}
 
-    return item.createdUserId ?? null;
+export function getSheetOwnerId(item: Item): string | null {
+    return item.createdUserId ?? readMetadataOwnerId(item);
 }
 
 export function isTokenOwner(item: Item, playerId: string): boolean {
-    const ownerId = getSheetOwnerId(item);
-    return ownerId === playerId;
+    return getSheetOwnerId(item) === playerId;
 }
 
 export async function resolveCanEditToken(tokenId: string): Promise<boolean> {

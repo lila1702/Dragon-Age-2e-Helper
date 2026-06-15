@@ -215,6 +215,17 @@ export function useCharacterSheet() {
     }, [isObrAvailable, isObrReady, tokenId, selectionError, flushSaveForToken, pushTrackersToToken]);
 
     useEffect(() => {
+        if (!isObrAvailable || !isObrReady || !tokenId || selectionError) return;
+
+        const unsubscribe = OBR.scene.items.onChange((items) => {
+            if (!items.some((item) => item.id === tokenId)) return;
+            void owlbearService.canEditToken(tokenId).then(setCanEditToken);
+        });
+
+        return unsubscribe;
+    }, [isObrAvailable, isObrReady, tokenId, selectionError]);
+
+    useEffect(() => {
         if (!isObrReady || !tokenId || !hasSheetOnToken || skipSaveRef.current) return;
         if (isLoadingSheet || loadedTokenIdRef.current !== tokenId || !canEditToken) return;
         if (!isDirtyRef.current) return;
