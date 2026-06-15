@@ -1,10 +1,188 @@
+import { parseNameAndAttribute } from "./attackBonus";
+import { normalizeReloadAction } from "./weaponReload";
 import { ATTRIBUTE_DEFINITIONS } from "./attributeDefinitions";
+import {
+    createEmptyHabilidades,
+    createHabilidadeId,
+} from "./habilidades";
 import { createSheetId } from "./createEmptySheet";
 
+import type {
+    ClassAbility,
+    Habilidades,
+    MeleeAttack,
+    RangedAttack,
+} from "./habilidades";
 import type { Attribute, CharacterSheet, CombatStats } from "./characterSheet";
+
+/** @deprecated Legacy shape kept for migration from older saves. */
+interface LegacyCharacterAbility {
+    id: string;
+    name: string;
+    type?: string;
+    attackBonus: number;
+    damage: string;
+    reload?: string;
+    description?: string;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseId(value: unknown): string {
+    return typeof value === "string" && value.length > 0 ? value : createHabilidadeId();
+}
+
+function parseAttributeAbbreviation(value: unknown): string {
+    if (typeof value !== "string") return "";
+    const abbr = value.trim().toUpperCase();
+    if (!abbr) return "";
+    return ATTRIBUTE_DEFINITIONS.some((def) => def.abbreviation === abbr) ? abbr : "";
+}
+
+function parseMeleeAttacks(raw: unknown): MeleeAttack[] {
+    if (!Array.isArray(raw)) return [];
+
+    const attacks: MeleeAttack[] = [];
+    for (const entry of raw) {
+        if (!isRecord(entry)) continue;
+
+        const rawName = typeof entry.name === "string" ? entry.name.trim() : "";
+        if (!rawName) continue;
+
+        const parsedAttribute = parseAttributeAbbreviation(entry.attributeAbbreviation);
+        const fromName = parseNameAndAttribute(rawName);
+
+        attacks.push({
+            id: parseId(entry.id),
+            name: parsedAttribute ? fromName.name || rawName : fromName.name || rawName,
+            attributeAbbreviation: parsedAttribute || fromName.attributeAbbreviation,
+            damageAttributeAbbreviation: parseAttributeAbbreviation(
+                entry.damageAttributeAbbreviation
+            ),
+            weaponGroup: typeof entry.weaponGroup === "string" ? entry.weaponGroup.trim() : "",
+            damage: typeof entry.damage === "string" ? entry.damage : "",
+        });
+    }
+    return attacks;
+}
+
+function parseRangedAttacks(raw: unknown): RangedAttack[] {
+    if (!Array.isArray(raw)) return [];
+
+    const attacks: RangedAttack[] = [];
+    for (const entry of raw) {
+        if (!isRecord(entry)) continue;
+
+        const rawName = typeof entry.name === "string" ? entry.name.trim() : "";
+        if (!rawName) continue;
+
+        const parsedAttribute = parseAttributeAbbreviation(entry.attributeAbbreviation);
+        const fromName = parseNameAndAttribute(rawName);
+
+        attacks.push({
+            id: parseId(entry.id),
+            name: parsedAttribute ? fromName.name || rawName : fromName.name || rawName,
+            attributeAbbreviation: parsedAttribute || fromName.attributeAbbreviation,
+            damageAttributeAbbreviation: parseAttributeAbbreviation(
+                entry.damageAttributeAbbreviation
+            ),
+            weaponGroup: typeof entry.weaponGroup === "string" ? entry.weaponGroup.trim() : "",
+            damage: typeof entry.damage === "string" ? entry.damage : "",
+            shortRange: typeof entry.shortRange === "string" ? entry.shortRange : undefined,
+            longRange: typeof entry.longRange === "string" ? entry.longRange : undefined,
+            reload: normalizeReloadAction(
+                typeof entry.reload === "string" ? entry.reload : undefined
+            ) || undefined,
+        });
+    }
+    return attacks;
+}
+
+function parseClassAbilities(raw: unknown): ClassAbility[] {
+    if (!Array.isArray(raw)) return [];
+
+    const abilities: ClassAbility[] = [];
+    for (const entry of raw) {
+        if (!isRecord(entry)) continue;
+        const name = typeof entry.name === "string" ? entry.name.trim() : "";
+        if (!name) continue;
+
+        abilities.push({
+            id: parseId(entry.id),
+            name,
+            description: typeof entry.description === "string" ? entry.description : "",
+        });
+    }
+    return abilities;
+}
+
+function migrateLegacyAbilities(raw: unknown): Habilidades {
+    const result = createEmptyHabilidades();
+    if (!Array.isArray(raw)) return result;
+
+    for (const entry of raw) {
+        if (!isRecord(entry)) continue;
+        const legacy = entry as unknown as LegacyCharacterAbility;
+        const name = typeof legacy.name === "string" ? legacy.name.trim() : "";
+        if (!name) continue;
+
+        const id = parseId(legacy.id);
+        const type = typeof legacy.type === "string" ? legacy.type : "Melee";
+        const hasAttack = Boolean(legacy.damage?.trim());
+
+        if (type === "Other" || (!hasAttack && legacy.description)) {
+            result.classAbilities.push({
+                id,
+                name,
+                description: legacy.description ?? "",
+            });
+            continue;
+        }
+
+        if (type === "Melee") {
+            const parsed = parseNameAndAttribute(name);
+            result.meleeAttacks.push({
+                id,
+                name: parsed.name,
+                attributeAbbreviation: parsed.attributeAbbreviation,
+                damage: legacy.damage ?? "",
+            });
+            continue;
+        }
+
+        const parsed = parseNameAndAttribute(name);
+        result.rangedAttacks.push({
+            id,
+            name: parsed.name,
+            attributeAbbreviation: parsed.attributeAbbreviation,
+            damage: legacy.damage ?? "",
+            reload: legacy.reload,
+        });
+    }
+
+    return result;
+}
+
+function parseHabilidades(data: Record<string, unknown>): Habilidades {
+    if (isRecord(data.habilidades)) {
+        const raw = data.habilidades;
+        return {
+            meleeAttacks: parseMeleeAttacks(raw.meleeAttacks),
+            rangedAttacks: parseRangedAttacks(raw.rangedAttacks),
+            weaponGroups: typeof raw.weaponGroups === "string" ? raw.weaponGroups : "",
+            lutUsesWillpowerForDamage: raw.lutUsesWillpowerForDamage === true,
+            arcaneWarriorOptionEnabled: raw.arcaneWarriorOptionEnabled === true,
+            classAbilities: parseClassAbilities(raw.classAbilities),
+        };
+    }
+
+    if (Array.isArray(data.abilities)) {
+        return migrateLegacyAbilities(data.abilities);
+    }
+
+    return createEmptyHabilidades();
 }
 
 function mergeAttributes(raw: unknown): Attribute[] {
@@ -76,5 +254,6 @@ export function normalizeCharacterSheet(data: unknown, tokenId: string): Charact
         mpMax,
         mpCurrent: Math.min(parseNumber(data.mpCurrent, mpMax), mpMax),
         attributes: mergeAttributes(data.attributes),
+        habilidades: parseHabilidades(data),
     };
 }

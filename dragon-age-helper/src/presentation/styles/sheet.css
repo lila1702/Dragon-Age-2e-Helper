@@ -911,3 +911,413 @@
     border: 1px dashed var(--da-black);
     border-radius: 4px;
 }
+
+/* Habilidades */
+.habilidades-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.habilidades-section__add {
+    margin-top: 0.35rem;
+    align-self: flex-start;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--da-black);
+    border-radius: 4px;
+    background: var(--da-white);
+    color: var(--da-black);
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.habilidades-section__add:hover {
+    background: color-mix(in srgb, var(--da-red) 8%, var(--da-white));
+}
+
+.habilidades-table-wrap {
+    border: 1px solid var(--da-black);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.habilidades-table-wrap--spaced {
+    margin-top: 0.75rem;
+}
+
+.habilidades-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: var(--sheet-text-sm);
+}
+
+.habilidades-table thead th {
+    background: var(--da-black);
+    color: var(--da-white);
+    font-weight: 700;
+    text-align: center;
+    padding: 0.4rem 0.35rem;
+    border-right: 1px solid color-mix(in srgb, var(--da-white) 20%, var(--da-black));
+}
+
+.habilidades-table thead th:last-child {
+    border-right: none;
+}
+
+.habilidades-table tbody td {
+    border-top: 1px solid var(--da-black);
+    border-right: 1px solid var(--da-black);
+    padding: 0;
+    vertical-align: middle;
+    background: var(--da-white);
+}
+
+.habilidades-table tbody td:last-child {
+    border-right: none;
+}
+
+.habilidades-table tbody tr:nth-child(even):not(.habilidades-table__groups-row) td {
+    background: color-mix(in srgb, var(--da-cell-bg) 45%, var(--da-white));
+}
+
+.habilidades-table__empty-row td {
+    text-align: center;
+    color: var(--da-muted);
+    font-size: var(--sheet-text-xs);
+    padding: 0.65rem 0.5rem !important;
+}
+
+.habilidades-table__groups-row td {
+    background: color-mix(in srgb, var(--da-cell-bg) 35%, var(--da-white)) !important;
+    padding: 0.35rem 0.5rem !important;
+}
+
+.habilidades-table__groups-label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 700;
+    font-size: var(--sheet-text-sm);
+}
+
+.habilidades-table__input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    padding: 0.45rem 0.4rem;
+    box-sizing: border-box;
+}
+
+.habilidades-table__input:focus {
+    outline: 2px solid color-mix(in srgb, var(--da-red) 40%, transparent);
+    outline-offset: -2px;
+    background: color-mix(in srgb, var(--da-red) 4%, var(--da-white));
+}
+
+.habilidades-table__input--attack {
+    text-align: center;
+    font-weight: 700;
+    color: var(--da-red);
+    font-variant-numeric: tabular-nums;
+}
+
+.habilidades-table__input--groups {
+    flex: 1;
+    font-weight: 400;
+}
+
+.habilidades-table__drag-head {
+    width: 1.75rem;
+}
+
+.habilidades-table__drag {
+    width: 1.75rem;
+    padding: 0 !important;
+    text-align: center;
+}
+
+.habilidades-table__drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 2rem;
+    font-size: var(--sheet-text-xs);
+    letter-spacing: -0.12em;
+    color: var(--da-muted);
+    cursor: grab;
+    user-select: none;
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+}
+
+.habilidades-table__drag-handle:active {
+    cursor: grabbing;
+}
+
+.habilidades-table__row--dragging td {
+    opacity: 0.45;
+}
+
+.habilidades-table__row--drop-target td {
+    outline: 2px dashed var(--da-red);
+    outline-offset: -2px;
+}
+
+.habilidades-table__select {
+    text-align: center;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.habilidades-table__penalty {
+    text-align: center;
+    width: 3rem;
+}
+
+.habilidades-table__checkbox {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    accent-color: var(--da-red);
+}
+
+.habilidades-table__attack-value {
+    display: block;
+    text-align: center;
+    font-weight: 700;
+    color: var(--da-red);
+    font-variant-numeric: tabular-nums;
+    padding: 0.45rem 0.4rem;
+}
+
+.habilidades-table__damage-cell {
+    position: relative;
+}
+
+.habilidades-table__damage-effective {
+    display: block;
+    font-size: var(--sheet-text-xs);
+    color: var(--da-muted);
+    padding: 0 0.4rem 0.25rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.habilidades-table__row--untrained td {
+    background: color-mix(in srgb, var(--da-red) 6%, var(--da-white)) !important;
+}
+
+.habilidades-table__input--untrained {
+    color: var(--da-red-dark);
+    font-weight: 600;
+}
+
+.habilidades-attacks__gm-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    margin-bottom: 0.45rem;
+    font-size: var(--sheet-text-xs);
+    color: var(--da-muted);
+    line-height: var(--sheet-line);
+    cursor: pointer;
+}
+
+.habilidades-attacks__gm-option input {
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+}
+
+.habilidades-table__roll-btn {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    padding: 0.45rem 0.4rem;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.habilidades-table__roll-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--da-red) 6%, var(--da-white));
+}
+
+.habilidades-table__roll-btn:disabled {
+    cursor: default;
+}
+
+.habilidades-table__placeholder {
+    color: var(--da-muted);
+}
+
+.habilidades-table__input--damage-base {
+    font-size: var(--sheet-text-xs);
+    padding-top: 0.3rem;
+    padding-bottom: 0.2rem;
+}
+
+.habilidades-table__damage-roll {
+    display: block;
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: var(--sheet-text-xs);
+    color: var(--da-muted);
+    padding: 0 0.4rem 0.35rem;
+    text-align: left;
+    cursor: pointer;
+    font-variant-numeric: tabular-nums;
+}
+
+.habilidades-table__damage-roll:hover:not(:disabled) {
+    color: var(--da-red);
+}
+
+.habilidades-table__details-row td {
+    background: color-mix(in srgb, var(--da-cell-bg) 40%, var(--da-white)) !important;
+    padding: 0.35rem 0.5rem !important;
+    border-top: none !important;
+}
+
+.habilidades-table__ranged-details {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.habilidades-table__detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+}
+
+.habilidades-table__detail-field .habilidades-table__input {
+    padding: 0.35rem 0.4rem;
+    border: 1px solid color-mix(in srgb, var(--da-black) 25%, transparent);
+    border-radius: 3px;
+    background: var(--da-white);
+}
+
+.habilidades-attacks__option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    margin-bottom: 0.6rem;
+    font-size: var(--sheet-text-sm);
+    line-height: var(--sheet-line);
+    cursor: pointer;
+}
+
+.habilidades-attacks__option input {
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+}
+
+.habilidades-table__select--damage-attr,
+.habilidades-table__select--group {
+    font-size: var(--sheet-text-xs);
+    padding-left: 0.15rem;
+    padding-right: 0.15rem;
+}
+
+.habilidades-class {
+    border: 1px solid var(--da-black);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.habilidades-class__header {
+    background: var(--da-black);
+    color: var(--da-white);
+    font-weight: 700;
+    font-size: var(--sheet-text-sm);
+    padding: 0.45rem 0.6rem;
+}
+
+.habilidades-class__body {
+    padding: 0.6rem;
+    background: var(--da-white);
+}
+
+.habilidades-class__empty {
+    margin: 0 0 0.5rem;
+    text-align: center;
+    color: var(--da-muted);
+    font-size: var(--sheet-text-xs);
+}
+
+.habilidades-class__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.habilidades-class__item {
+    border: 1px solid color-mix(in srgb, var(--da-black) 25%, transparent);
+    border-radius: 4px;
+    padding: 0.5rem;
+    background: color-mix(in srgb, var(--da-cell-bg) 25%, var(--da-white));
+}
+
+.habilidades-class__item-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
+.habilidades-class__name {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    color: var(--da-red);
+    padding: 0.15rem 0;
+}
+
+.habilidades-class__name:focus {
+    outline: none;
+    border-bottom: 1px solid var(--da-red);
+}
+
+.habilidades-class__description {
+    width: 100%;
+    border: 1px solid color-mix(in srgb, var(--da-black) 15%, transparent);
+    border-radius: 3px;
+    background: var(--da-white);
+    font: inherit;
+    font-size: var(--sheet-text-sm);
+    line-height: 1.45;
+    padding: 0.45rem 0.5rem;
+    resize: vertical;
+    min-height: 3.5rem;
+    box-sizing: border-box;
+}
+
+.habilidades-class__remove {
+    border: none;
+    background: transparent;
+    color: var(--da-red-dark);
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.habilidades-class__remove:hover {
+    text-decoration: underline;
+}

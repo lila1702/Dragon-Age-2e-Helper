@@ -20,6 +20,8 @@ function App() {
         isCreatingSheet,
         createSheetOnToken,
         rollAttribute,
+        rollAttack,
+        rollDamage,
         setName,
         setHistorico,
         setClassName,
@@ -39,15 +41,30 @@ function App() {
         reorderFocus,
         setFocusBonus,
         setAttributePrimary,
+        addMeleeAttack,
+        updateMeleeAttack,
+        removeMeleeAttack,
+        reorderMeleeAttack,
+        addRangedAttack,
+        updateRangedAttack,
+        removeRangedAttack,
+        reorderRangedAttack,
+        setWeaponGroups,
+        setLutUsesWillpowerForDamage,
+        setArcaneWarriorOptionEnabled,
+        addClassAbility,
+        updateClassAbility,
+        removeClassAbility,
     } = useCharacterSheet();
 
-    usePlayerRole(isObrReady);
+    const { isGM } = usePlayerRole(isObrReady);
 
     return (
         <CharacterSheetView
             sheet={characterSheet}
             isObrAvailable={isObrAvailable}
             isObrReady={isObrReady}
+            isGM={isGM}
             tokenName={tokenName}
             selectionError={selectionError}
             isLoadingSheet={isLoadingSheet}
@@ -59,6 +76,12 @@ function App() {
             isCreatingSheet={isCreatingSheet}
             onCreateSheet={() => void createSheetOnToken()}
             onRollAttribute={rollAttribute}
+            onRollAttack={(attackId, attackKind, options) =>
+                void rollAttack(attackId, attackKind, options)
+            }
+            onRollDamage={(attackId, attackKind, options) =>
+                void rollDamage(attackId, attackKind, options)
+            }
             onNameChange={setName}
             onHistoricoChange={setHistorico}
             onClassNameChange={setClassName}
@@ -78,6 +101,20 @@ function App() {
             onReorderFocus={reorderFocus}
             onFocusBonusChange={setFocusBonus}
             onPrimaryChange={setAttributePrimary}
+            onAddMeleeAttack={addMeleeAttack}
+            onUpdateMeleeAttack={updateMeleeAttack}
+            onRemoveMeleeAttack={removeMeleeAttack}
+            onReorderMeleeAttack={reorderMeleeAttack}
+            onAddRangedAttack={addRangedAttack}
+            onUpdateRangedAttack={updateRangedAttack}
+            onRemoveRangedAttack={removeRangedAttack}
+            onReorderRangedAttack={reorderRangedAttack}
+            onWeaponGroupsChange={setWeaponGroups}
+            onLutUsesWillpowerForDamageChange={setLutUsesWillpowerForDamage}
+            onArcaneWarriorOptionEnabledChange={setArcaneWarriorOptionEnabled}
+            onAddClassAbility={addClassAbility}
+            onUpdateClassAbility={updateClassAbility}
+            onRemoveClassAbility={removeClassAbility}
         />
     );
 }

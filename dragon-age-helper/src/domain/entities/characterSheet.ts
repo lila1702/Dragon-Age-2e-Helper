@@ -1,3 +1,5 @@
+import type { Habilidades } from "./habilidades";
+
 export interface Attribute {
     name: string;
     abbreviation: string;
@@ -30,4 +32,5 @@ export interface CharacterSheet {
     mpCurrent: number;
     mpMax: number;
     attributes: Attribute[];
+    habilidades?: Habilidades;
 }

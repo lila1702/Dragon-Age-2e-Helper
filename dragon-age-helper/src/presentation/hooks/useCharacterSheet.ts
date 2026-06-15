@@ -3,14 +3,29 @@ import OBR from "@owlbear-rodeo/sdk";
 
 import { createEmptySheet } from "../../domain/entities/createEmptySheet";
 import { owlbearService } from "../../infrastructure/owlbear/OwlbearService";
-import { showOwlbearNotification, showRollNotification } from "../../infrastructure/owlbear/rollNotification";
+import { showOwlbearNotification, showRollNotification, showDamageRollNotification } from "../../infrastructure/owlbear/rollNotification";
 import { DEV_MOCK_CHARACTER } from "../fixtures/devMockCharacter";
 import { POPOVER_HEIGHT, POPOVER_WIDTH } from "../layout/popoverLayout";
 import { useSelectedToken } from "./useSelectedToken";
 import { useOwlTrackerSync } from "./useOwlTrackerSync";
 
+import {
+    createEmptyClassAbility,
+    createEmptyHabilidades,
+    createEmptyMeleeAttack,
+    createEmptyRangedAttack,
+} from "../../domain/entities/habilidades";
+
 import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entities/characterSheet";
+import type { ClassAbility, MeleeAttack, RangedAttack } from "../../domain/entities/habilidades";
 import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
+import type { AttackRollOptions } from "../../domain/entities/attackRoll";
+import {
+    computeAttackBonus,
+    computeDamageWithAttribute,
+    isAttackUntrained,
+} from "../../domain/entities/attackBonus";
+import { buildDamageRollNotation } from "../../domain/entities/attackRoll";
 
 const SAVE_DEBOUNCE_MS = 600;
 
@@ -317,6 +332,120 @@ export function useCharacterSheet() {
         }
     };
 
+    const rollAttack = useCallback(
+        async (
+            attackId: string,
+            attackKind: "melee" | "ranged",
+            options?: AttackRollOptions
+        ) => {
+            const canRollNow = !isObrAvailable || isObrReady;
+            if (!canRollNow) {
+                void showOwlbearNotification("Owlbear ainda não está pronto para rolagens.", "WARNING");
+                return;
+            }
+            if (!canEditSheet) return;
+            if (isRollingRef.current) {
+                void showOwlbearNotification("Aguarde a rolagem anterior terminar.", "INFO");
+                return;
+            }
+
+            const habilidades = characterSheet.habilidades ?? createEmptyHabilidades();
+            const attack =
+                attackKind === "melee"
+                    ? habilidades.meleeAttacks.find((entry) => entry.id === attackId)
+                    : habilidades.rangedAttacks.find((entry) => entry.id === attackId);
+            if (!attack) return;
+
+            const untrained = isAttackUntrained(attack.weaponGroup, habilidades.weaponGroups);
+            const attackBonus = computeAttackBonus(
+                characterSheet.attributes,
+                attack.attributeAbbreviation,
+                untrained,
+                attack.weaponGroup
+            );
+            const rollLabel = `${attack.name || "Ataque"} (${attack.attributeAbbreviation || "—"})`;
+
+            isRollingRef.current = true;
+            try {
+                const result = await owlbearService.rollAttackTest(attackBonus, options);
+                await showRollNotification(rollLabel, result);
+            } catch (error) {
+                console.error("Erro ao rolar ataque:", error);
+                const message =
+                    error instanceof Error ? error.message : "Não foi possível rolar o ataque.";
+                void showOwlbearNotification(message, "WARNING");
+            } finally {
+                isRollingRef.current = false;
+            }
+        },
+        [canEditSheet, characterSheet, isObrAvailable, isObrReady]
+    );
+
+    const rollDamage = useCallback(
+        async (
+            attackId: string,
+            attackKind: "melee" | "ranged",
+            options?: AttackRollOptions
+        ) => {
+            const canRollNow = !isObrAvailable || isObrReady;
+            if (!canRollNow) {
+                void showOwlbearNotification("Owlbear ainda não está pronto para rolagens.", "WARNING");
+                return;
+            }
+            if (!canEditSheet) return;
+            if (isRollingRef.current) {
+                void showOwlbearNotification("Aguarde a rolagem anterior terminar.", "INFO");
+                return;
+            }
+
+            const habilidades = characterSheet.habilidades ?? createEmptyHabilidades();
+            const attack =
+                attackKind === "melee"
+                    ? habilidades.meleeAttacks.find((entry) => entry.id === attackId)
+                    : habilidades.rangedAttacks.find((entry) => entry.id === attackId);
+            if (!attack) return;
+
+            const untrained = isAttackUntrained(attack.weaponGroup, habilidades.weaponGroups);
+            const damageOptions = {
+                attributes: characterSheet.attributes,
+                attackAttributeAbbreviation: attack.attributeAbbreviation,
+                damageAttributeAbbreviation: attack.damageAttributeAbbreviation,
+                lutUsesWillpowerForDamage: habilidades.lutUsesWillpowerForDamage,
+            };
+            const fullDamage = computeDamageWithAttribute(attack.damage, damageOptions);
+
+            if (!buildDamageRollNotation(fullDamage, options?.situationalModifier ?? 0)) {
+                void showOwlbearNotification("Dano inválido para rolagem.", "WARNING");
+                return;
+            }
+
+            const rollLabel = `${attack.name || "Arma"} — dano`;
+            isRollingRef.current = true;
+            try {
+                const result = await owlbearService.rollDamageTest(
+                    fullDamage,
+                    untrained,
+                    options
+                );
+                await showDamageRollNotification(
+                    rollLabel,
+                    result.diceValues,
+                    result.total,
+                    result.halved,
+                    result.rawTotal
+                );
+            } catch (error) {
+                console.error("Erro ao rolar dano:", error);
+                const message =
+                    error instanceof Error ? error.message : "Não foi possível rolar o dano.";
+                void showOwlbearNotification(message, "WARNING");
+            } finally {
+                isRollingRef.current = false;
+            }
+        },
+        [canEditSheet, characterSheet, isObrAvailable, isObrReady]
+    );
+
     const updateSheet = useCallback(
         (updater: (prev: CharacterSheet) => CharacterSheet) => {
             if (!canEditSheet) return;
@@ -513,6 +642,223 @@ export function useCharacterSheet() {
         [updateSheet]
     );
 
+    const addMeleeAttack = useCallback(
+        () =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                return {
+                    ...prev,
+                    habilidades: {
+                        ...habilidades,
+                        meleeAttacks: [...habilidades.meleeAttacks, createEmptyMeleeAttack()],
+                    },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const updateMeleeAttack = useCallback(
+        (id: string, patch: Partial<MeleeAttack>) =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                return {
+                    ...prev,
+                    habilidades: {
+                        ...habilidades,
+                        meleeAttacks: habilidades.meleeAttacks.map((attack) =>
+                            attack.id === id ? { ...attack, ...patch } : attack
+                        ),
+                    },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const removeMeleeAttack = useCallback(
+        (id: string) =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                return {
+                    ...prev,
+                    habilidades: {
+                        ...habilidades,
+                        meleeAttacks: habilidades.meleeAttacks.filter((attack) => attack.id !== id),
+                    },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const reorderMeleeAttack = useCallback(
+        (fromIndex: number, toIndex: number) =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                const attacks = [...habilidades.meleeAttacks];
+                const [moved] = attacks.splice(fromIndex, 1);
+                if (!moved) return prev;
+                attacks.splice(toIndex, 0, moved);
+                return {
+                    ...prev,
+                    habilidades: { ...habilidades, meleeAttacks: attacks },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const addRangedAttack = useCallback(
+        () =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                return {
+                    ...prev,
+                    habilidades: {
+                        ...habilidades,
+                        rangedAttacks: [...habilidades.rangedAttacks, createEmptyRangedAttack()],
+                    },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const updateRangedAttack = useCallback(
+        (id: string, patch: Partial<RangedAttack>) =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                return {
+                    ...prev,
+                    habilidades: {
+                        ...habilidades,
+                        rangedAttacks: habilidades.rangedAttacks.map((attack) =>
+                            attack.id === id ? { ...attack, ...patch } : attack
+                        ),
+                    },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const removeRangedAttack = useCallback(
+        (id: string) =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                return {
+                    ...prev,
+                    habilidades: {
+                        ...habilidades,
+                        rangedAttacks: habilidades.rangedAttacks.filter((attack) => attack.id !== id),
+                    },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const reorderRangedAttack = useCallback(
+        (fromIndex: number, toIndex: number) =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                const attacks = [...habilidades.rangedAttacks];
+                const [moved] = attacks.splice(fromIndex, 1);
+                if (!moved) return prev;
+                attacks.splice(toIndex, 0, moved);
+                return {
+                    ...prev,
+                    habilidades: { ...habilidades, rangedAttacks: attacks },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const setWeaponGroups = useCallback(
+        (weaponGroups: string) =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                return {
+                    ...prev,
+                    habilidades: { ...habilidades, weaponGroups },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const setLutUsesWillpowerForDamage = useCallback(
+        (lutUsesWillpowerForDamage: boolean) =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                return {
+                    ...prev,
+                    habilidades: { ...habilidades, lutUsesWillpowerForDamage },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const setArcaneWarriorOptionEnabled = useCallback(
+        (arcaneWarriorOptionEnabled: boolean) =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                return {
+                    ...prev,
+                    habilidades: {
+                        ...habilidades,
+                        arcaneWarriorOptionEnabled,
+                        lutUsesWillpowerForDamage: arcaneWarriorOptionEnabled
+                            ? habilidades.lutUsesWillpowerForDamage
+                            : false,
+                    },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const addClassAbility = useCallback(
+        () =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                return {
+                    ...prev,
+                    habilidades: {
+                        ...habilidades,
+                        classAbilities: [...habilidades.classAbilities, createEmptyClassAbility()],
+                    },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const updateClassAbility = useCallback(
+        (id: string, patch: Partial<ClassAbility>) =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                return {
+                    ...prev,
+                    habilidades: {
+                        ...habilidades,
+                        classAbilities: habilidades.classAbilities.map((ability) =>
+                            ability.id === id ? { ...ability, ...patch } : ability
+                        ),
+                    },
+                };
+            }),
+        [updateSheet]
+    );
+
+    const removeClassAbility = useCallback(
+        (id: string) =>
+            updateSheet((prev) => {
+                const habilidades = prev.habilidades ?? createEmptyHabilidades();
+                return {
+                    ...prev,
+                    habilidades: {
+                        ...habilidades,
+                        classAbilities: habilidades.classAbilities.filter(
+                            (ability) => ability.id !== id
+                        ),
+                    },
+                };
+            }),
+        [updateSheet]
+    );
+
     const canRoll = canEditSheet && (!isObrAvailable || isObrReady);
 
     return {
@@ -531,6 +877,8 @@ export function useCharacterSheet() {
         isCreatingSheet,
         createSheetOnToken,
         rollAttribute,
+        rollAttack,
+        rollDamage,
         setName,
         setHistorico,
         setClassName,
@@ -550,6 +898,20 @@ export function useCharacterSheet() {
         reorderFocus,
         setFocusBonus,
         setAttributePrimary,
+        addMeleeAttack,
+        updateMeleeAttack,
+        removeMeleeAttack,
+        reorderMeleeAttack,
+        addRangedAttack,
+        updateRangedAttack,
+        removeRangedAttack,
+        reorderRangedAttack,
+        setWeaponGroups,
+        setLutUsesWillpowerForDamage,
+        setArcaneWarriorOptionEnabled,
+        addClassAbility,
+        updateClassAbility,
+        removeClassAbility,
     };
 }
 

@@ -36,7 +36,7 @@ export const DEV_MOCK_CHARACTER: CharacterSheet = {
             isPrimary: true,
             focusNames: ["Espadas"],
         },
-        { name: "Luta", abbreviation: "LUT", value: 0, isPrimary: true, focusNames: [] },
+        { name: "Luta", abbreviation: "LUT", value: 3, isPrimary: true, focusNames: ["Espadas"] },
         {
             name: "Percepção",
             abbreviation: "PER",
@@ -51,4 +51,32 @@ export const DEV_MOCK_CHARACTER: CharacterSheet = {
         },
         { name: "Vontade", abbreviation: "VON", value: 2, focusNames: [] },
     ],
+    habilidades: {
+        meleeAttacks: [
+            {
+                id: "melee_dev_sword",
+                name: "Espada Longa",
+                attributeAbbreviation: "LUT",
+                weaponGroup: "Espadas",
+                damage: "2d6",
+            },
+            {
+                id: "melee_dev_staff",
+                name: "Lança Arcana",
+                attributeAbbreviation: "PRE",
+                damageAttributeAbbreviation: "VON",
+                weaponGroup: "Cajados",
+                damage: "1d6",
+            },
+        ],
+        rangedAttacks: [],
+        weaponGroups: "Espadas; Escudos; Cajados",
+        classAbilities: [
+            {
+                id: "class_dev_shield",
+                name: "Escudo",
+                description: "Bônus de defesa +2 quando equipado.",
+            },
+        ],
+    },
 };

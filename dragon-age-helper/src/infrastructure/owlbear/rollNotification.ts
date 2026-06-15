@@ -89,3 +89,18 @@ export async function showRollNotification(
     const variant = result.hasStunts ? "SUCCESS" : "INFO";
     await showOwlbearNotification(message, variant);
 }
+
+export async function showDamageRollNotification(
+    label: string,
+    diceValues: number[],
+    total: number,
+    halved: boolean,
+    rawTotal?: number
+): Promise<void> {
+    const dice = diceValues.join("+");
+    const halveNote =
+        halved && rawTotal !== undefined && rawTotal !== total
+            ? ` (metade de ${rawTotal})`
+            : "";
+    await showOwlbearNotification(`${label}: ${dice} = ${total}${halveNote}`, "INFO");
+}

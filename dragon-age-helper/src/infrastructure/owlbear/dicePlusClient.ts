@@ -1,6 +1,6 @@
 import OBR from "@owlbear-rodeo/sdk";
 
-import type { DicePlusRollEnvelope } from "./owlbear-dice";
+import type { DicePlusRollEnvelope, GenericDiceRollResult } from "./owlbear-dice";
 
 /** Identificador usado nos canais de resultado do Dice+ (`{source}/roll-result`). */
 export const DICE_PLUS_SOURCE = "com.dragonagehelper";
@@ -86,6 +86,22 @@ export async function checkDicePlusReady(): Promise<boolean> {
             resolve(false);
         }, READY_TIMEOUT_MS);
     });
+}
+
+function mapGenericRollResult(payload: DicePlusRollResultPayload): GenericDiceRollResult {
+    const diceValues: number[] = [];
+
+    for (const group of payload.result.groups) {
+        for (const die of group.dice) {
+            if (die.kept === false) continue;
+            diceValues.push(die.value);
+        }
+    }
+
+    return {
+        diceValues,
+        totalValue: payload.result.totalValue,
+    };
 }
 
 function mapRollResultToEnvelope(payload: DicePlusRollResultPayload): DicePlusRollEnvelope {
@@ -210,6 +226,109 @@ export async function rollDicePlus(
     for (let attempt = 0; attempt < ROLL_RETRY_MAX; attempt++) {
         try {
             return await rollDicePlusOnce(diceNotation);
+        } catch (error) {
+            const canRetry = isRollInProgressError(error) && attempt < ROLL_RETRY_MAX - 1;
+            if (!canRetry) {
+                if (isRollInProgressError(error)) {
+                    throw new Error("Aguarde a rolagem anterior do Dice+ terminar e tente novamente.");
+                }
+                throw error;
+            }
+            await sleep(ROLL_RETRY_DELAY_MS);
+        }
+    }
+
+    throw new Error("Aguarde a rolagem anterior do Dice+ terminar e tente novamente.");
+}
+
+async function rollDicePlusGenericOnce(diceNotation: string): Promise<GenericDiceRollResult> {
+    const rollId = createRollId();
+    const resultChannel = `${DICE_PLUS_SOURCE}/roll-result`;
+    const errorChannel = `${DICE_PLUS_SOURCE}/roll-error`;
+
+    return new Promise((resolve, reject) => {
+        let settled = false;
+
+        const finishResolve = (value: GenericDiceRollResult) => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            resolve(value);
+        };
+
+        const finishReject = (error: Error) => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            reject(error);
+        };
+
+        const unsubscribeResult = OBR.broadcast.onMessage(resultChannel, (event) => {
+            const data = event.data as DicePlusRollResultPayload;
+            if (data.rollId !== rollId) return;
+
+            try {
+                finishResolve(mapGenericRollResult(data));
+            } catch (error) {
+                finishReject(error instanceof Error ? error : new Error(String(error)));
+            }
+        });
+
+        const unsubscribeError = OBR.broadcast.onMessage(errorChannel, (event) => {
+            const data = event.data as DicePlusRollErrorPayload;
+            if (data.rollId !== rollId) return;
+
+            finishReject(new Error(data.error || "O Dice+ não conseguiu completar a rolagem."));
+        });
+
+        const timeoutId = setTimeout(() => {
+            finishReject(new Error("Tempo esgotado aguardando resposta do Dice+."));
+        }, ROLL_TIMEOUT_MS);
+
+        function cleanup(): void {
+            unsubscribeResult();
+            unsubscribeError();
+            clearTimeout(timeoutId);
+        }
+
+        void (async () => {
+            try {
+                await OBR.broadcast.sendMessage(
+                    ROLL_REQUEST_CHANNEL,
+                    {
+                        rollId,
+                        playerId: OBR.player.id,
+                        playerName: await OBR.player.getName(),
+                        rollTarget: "everyone",
+                        diceNotation,
+                        showResults: true,
+                        timestamp: Date.now(),
+                        source: DICE_PLUS_SOURCE,
+                    },
+                    { destination: "ALL" }
+                );
+            } catch (error) {
+                finishReject(
+                    error instanceof Error
+                        ? error
+                        : new Error("Não foi possível enviar a rolagem ao Dice+.")
+                );
+            }
+        })();
+    });
+}
+
+export async function rollDicePlusGeneric(diceNotation: string): Promise<GenericDiceRollResult> {
+    const isReady = await checkDicePlusReady();
+    if (!isReady) {
+        throw new Error(
+            "Dice+ não está disponível. Ative a extensão Dice+ na sala e aguarde ficar pronta."
+        );
+    }
+
+    for (let attempt = 0; attempt < ROLL_RETRY_MAX; attempt++) {
+        try {
+            return await rollDicePlusGenericOnce(diceNotation);
         } catch (error) {
             const canRetry = isRollInProgressError(error) && attempt < ROLL_RETRY_MAX - 1;
             if (!canRetry) {

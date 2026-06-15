@@ -5,8 +5,8 @@ import { normalizeCharacterSheet } from "../../domain/entities/normalizeCharacte
 import { METADATA_KEYS, SCHEMA_VERSION } from "./metadataKeys";
 import { SELECTION_ERRORS } from "./selectionErrors";
 import { applySheetMetadataToItem } from "./applySheetToItem";
-import { devDiceRoll } from "./devDiceRoll";
-import { rollDicePlus } from "./dicePlusClient";
+import { devDiceRoll, devGenericDiceRoll } from "./devDiceRoll";
+import { rollDicePlus, rollDicePlusGeneric } from "./dicePlusClient";
 import {
     clearPinnedToken,
     readPinnedToken,
@@ -21,6 +21,15 @@ import {
     buildAttributeTestDiceNotation,
     getAttributeRollBreakdown,
 } from "../../domain/entities/attributeRoll";
+
+import {
+    buildAttackRollModifiers,
+    buildAttackTestDiceNotation,
+    buildDamageRollNotation,
+    halveDamageTotal,
+} from "../../domain/entities/attackRoll";
+
+import type { AttackRollOptions, DamageRollResult } from "../../domain/entities/attackRoll";
 
 import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
 import type { Attribute, CharacterSheet } from "../../domain/entities/characterSheet";
@@ -118,6 +127,50 @@ export class OwlbearService implements IOwlbearService {
         );
 
         return resultadoCalculado;
+    }
+
+    async rollAttackTest(
+        attackBonus: number | null,
+        options?: AttackRollOptions
+    ): Promise<StuntRollResult> {
+        const situationalModifier = options?.situationalModifier ?? 0;
+        const diceNotation = buildAttackTestDiceNotation(attackBonus, situationalModifier);
+        const modifiers = buildAttackRollModifiers(attackBonus, situationalModifier);
+
+        const results = OBR.isAvailable
+            ? await rollDicePlus(diceNotation)
+            : devDiceRoll();
+
+        const diceTotal = results.orderedD6.reduce((sum, value) => sum + value, 0);
+        const modifierTotal = (attackBonus ?? 0) + situationalModifier;
+
+        return calculateDicePlusStunt(results.orderedD6, diceTotal + modifierTotal, modifiers);
+    }
+
+    async rollDamageTest(
+        fullDamage: string,
+        halve: boolean,
+        options?: AttackRollOptions
+    ): Promise<DamageRollResult> {
+        const situationalModifier = options?.situationalModifier ?? 0;
+        const diceNotation = buildDamageRollNotation(fullDamage, situationalModifier);
+        if (!diceNotation) {
+            throw new Error("Notação de dano inválida para rolagem.");
+        }
+
+        const results = OBR.isAvailable
+            ? await rollDicePlusGeneric(diceNotation)
+            : devGenericDiceRoll(diceNotation);
+
+        const rawTotal = results.totalValue;
+        const total = halve ? halveDamageTotal(rawTotal) : rawTotal;
+
+        return {
+            diceValues: results.diceValues,
+            total,
+            rawTotal,
+            halved: halve,
+        };
     }
 
     async loadCharacterSheet(tokenId: string): Promise<CharacterSheet | null> {

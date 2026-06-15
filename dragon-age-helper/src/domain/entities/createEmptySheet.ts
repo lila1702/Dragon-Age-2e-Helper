@@ -1,4 +1,5 @@
 import { ATTRIBUTE_DEFINITIONS } from "./attributeDefinitions";
+import { createEmptyHabilidades } from "./habilidades";
 
 import type { Attribute, CharacterSheet, CombatStats } from "./characterSheet";
 
@@ -38,5 +39,6 @@ export function createEmptySheet(tokenId: string): CharacterSheet {
         mpCurrent: 10,
         mpMax: 10,
         attributes: createEmptyAttributes(),
+        habilidades: createEmptyHabilidades(),
     };
 }

@@ -3,6 +3,11 @@ export interface DicePlusRollEnvelope {
     totalValue: number;
 }
 
+export interface GenericDiceRollResult {
+    diceValues: number[];
+    totalValue: number;
+}
+
 export interface TokenBarValue {
     current: number;
     max: number;

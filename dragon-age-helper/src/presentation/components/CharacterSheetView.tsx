@@ -1,12 +1,15 @@
 import { useState } from "react";
 
 import { AttributeStripRow } from "./AttributeStripRow";
+import { HabilidadesPanel } from "./HabilidadesPanel";
 import { SheetHeaderForm } from "./SheetHeaderForm";
 import { SheetTabs } from "./SheetTabs";
 import { TokenSelectionBar } from "./TokenSelectionBar";
 import type { SheetTabId } from "./SheetTabs";
 
 import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entities/characterSheet";
+import type { ClassAbility, MeleeAttack, RangedAttack } from "../../domain/entities/habilidades";
+import type { AttackRollOptions } from "../../domain/entities/attackRoll";
 import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
 
 import "../styles/sheet.css";
@@ -22,6 +25,7 @@ export interface CharacterSheetViewProps {
     canCreateSheet: boolean;
     canEditSheet: boolean;
     canRoll: boolean;
+    isGM?: boolean;
     isReadOnlySheet: boolean;
     isCreatingSheet: boolean;
     onCreateSheet: () => void;
@@ -45,6 +49,30 @@ export interface CharacterSheetViewProps {
     onFocusBonusChange: (abbreviation: string, bonus: number) => void;
     onAttributeValueChange: (abbreviation: string, value: number) => void;
     onPrimaryChange: (abbreviation: string, isPrimary: boolean) => void;
+    onAddMeleeAttack: () => void;
+    onUpdateMeleeAttack: (id: string, patch: Partial<MeleeAttack>) => void;
+    onRemoveMeleeAttack: (id: string) => void;
+    onReorderMeleeAttack: (fromIndex: number, toIndex: number) => void;
+    onAddRangedAttack: () => void;
+    onUpdateRangedAttack: (id: string, patch: Partial<RangedAttack>) => void;
+    onRemoveRangedAttack: (id: string) => void;
+    onReorderRangedAttack: (fromIndex: number, toIndex: number) => void;
+    onWeaponGroupsChange: (value: string) => void;
+    onLutUsesWillpowerForDamageChange: (enabled: boolean) => void;
+    onArcaneWarriorOptionEnabledChange: (enabled: boolean) => void;
+    onRollAttack: (
+        attackId: string,
+        attackKind: "melee" | "ranged",
+        options?: AttackRollOptions
+    ) => void;
+    onRollDamage: (
+        attackId: string,
+        attackKind: "melee" | "ranged",
+        options?: AttackRollOptions
+    ) => void;
+    onAddClassAbility: () => void;
+    onUpdateClassAbility: (id: string, patch: Partial<ClassAbility>) => void;
+    onRemoveClassAbility: (id: string) => void;
 }
 
 function PlaceholderTab({ label }: { label: string }) {
@@ -67,6 +95,7 @@ export function CharacterSheetView({
     canCreateSheet,
     canEditSheet,
     canRoll,
+    isGM = false,
     isReadOnlySheet,
     isCreatingSheet,
     onCreateSheet,
@@ -90,6 +119,22 @@ export function CharacterSheetView({
     onFocusBonusChange,
     onAttributeValueChange,
     onPrimaryChange,
+    onAddMeleeAttack,
+    onUpdateMeleeAttack,
+    onRemoveMeleeAttack,
+    onReorderMeleeAttack,
+    onAddRangedAttack,
+    onUpdateRangedAttack,
+    onRemoveRangedAttack,
+    onReorderRangedAttack,
+    onWeaponGroupsChange,
+    onLutUsesWillpowerForDamageChange,
+    onArcaneWarriorOptionEnabledChange,
+    onRollAttack,
+    onRollDamage,
+    onAddClassAbility,
+    onUpdateClassAbility,
+    onRemoveClassAbility,
 }: CharacterSheetViewProps) {
     const [activeTab, setActiveTab] = useState<SheetTabId>("atributos");
 
@@ -155,7 +200,31 @@ export function CharacterSheetView({
                         </div>
                     )}
 
-                    {activeTab === "habilidades" && <PlaceholderTab label="habilidades" />}
+                    {activeTab === "habilidades" && (
+                        <HabilidadesPanel
+                            habilidades={sheet.habilidades}
+                            attributes={sheet.attributes}
+                            isGM={isGM}
+                            disabled={formDisabled}
+                            canRoll={canRoll}
+                            onAddMeleeAttack={onAddMeleeAttack}
+                            onUpdateMeleeAttack={onUpdateMeleeAttack}
+                            onRemoveMeleeAttack={onRemoveMeleeAttack}
+                            onReorderMeleeAttack={onReorderMeleeAttack}
+                            onAddRangedAttack={onAddRangedAttack}
+                            onUpdateRangedAttack={onUpdateRangedAttack}
+                            onRemoveRangedAttack={onRemoveRangedAttack}
+                            onReorderRangedAttack={onReorderRangedAttack}
+                            onWeaponGroupsChange={onWeaponGroupsChange}
+                            onLutUsesWillpowerForDamageChange={onLutUsesWillpowerForDamageChange}
+                            onArcaneWarriorOptionEnabledChange={onArcaneWarriorOptionEnabledChange}
+                            onRollAttack={onRollAttack}
+                            onRollDamage={onRollDamage}
+                            onAddClassAbility={onAddClassAbility}
+                            onUpdateClassAbility={onUpdateClassAbility}
+                            onRemoveClassAbility={onRemoveClassAbility}
+                        />
+                    )}
                     {activeTab === "talentos" && <PlaceholderTab label="talentos" />}
                     {activeTab === "magia" && <PlaceholderTab label="magia" />}
                 </div>

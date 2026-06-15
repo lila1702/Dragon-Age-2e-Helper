@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:lan": "vite --host",
+    "dev:owlbear": "vite --host",
+    "tunnel": "npx --yes cloudflared tunnel --url http://localhost:5173",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
