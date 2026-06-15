@@ -1,4 +1,8 @@
 import type { GenericDiceRollResult } from "./owlbear-dice";
+import {
+    halveDamageTotal,
+    parseHalvedDiceNotation,
+} from "../../domain/entities/attackRoll";
 
 const DAMAGE_NOTATION = /^(\d+)d(\d+)([+-]\d+)?$/i;
 
@@ -19,7 +23,24 @@ export function devDiceRoll(): { orderedD6: number[]; totalValue: number } {
 }
 
 export function devGenericDiceRoll(diceNotation: string): GenericDiceRollResult {
-    const trimmed = diceNotation.trim();
+    const { innerNotation, halve } = parseHalvedDiceNotation(diceNotation);
+    const trimmed = innerNotation.trim();
+
+    const spacedMatch = trimmed.match(/^(\d+)d(\d+)\s*([+-])\s*(\d+)$/i);
+    if (spacedMatch) {
+        const count = Number.parseInt(spacedMatch[1], 10);
+        const sides = Number.parseInt(spacedMatch[2], 10);
+        const sign = spacedMatch[3] === "-" ? -1 : 1;
+        const modifier = sign * Number.parseInt(spacedMatch[4], 10);
+        const diceValues = Array.from({ length: count }, () => rollDie(sides));
+        const diceTotal = diceValues.reduce((sum, value) => sum + value, 0);
+        const rawTotal = diceTotal + modifier;
+        return {
+            diceValues,
+            totalValue: halve ? halveDamageTotal(rawTotal) : rawTotal,
+        };
+    }
+
     const match = trimmed.match(DAMAGE_NOTATION);
     if (!match) {
         throw new Error(`Notação de dano inválida: ${diceNotation}`);
@@ -30,9 +51,10 @@ export function devGenericDiceRoll(diceNotation: string): GenericDiceRollResult 
     const modifier = match[3] ? Number.parseInt(match[3], 10) : 0;
     const diceValues = Array.from({ length: count }, () => rollDie(sides));
     const diceTotal = diceValues.reduce((sum, value) => sum + value, 0);
+    const rawTotal = diceTotal + modifier;
 
     return {
         diceValues,
-        totalValue: diceTotal + modifier,
+        totalValue: halve ? halveDamageTotal(rawTotal) : rawTotal,
     };
 }

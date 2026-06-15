@@ -25,7 +25,8 @@ import {
 import {
     buildAttackRollModifiers,
     buildAttackTestDiceNotation,
-    buildDamageRollNotation,
+    buildDamageRollNotationForDicePlus,
+    computeDamageRawTotal,
     halveDamageTotal,
 } from "../../domain/entities/attackRoll";
 
@@ -116,7 +117,7 @@ export class OwlbearService implements IOwlbearService {
         const modifierTotal =
             breakdown.attributeValue + breakdown.focusBonus + breakdown.situationalModifier;
 
-        const resultadoCalculado = calculateDicePlusStunt(
+        return calculateDicePlusStunt(
             results.orderedD6,
             diceTotal + modifierTotal,
             {
@@ -125,8 +126,6 @@ export class OwlbearService implements IOwlbearService {
                 situational: breakdown.situationalModifier,
             }
         );
-
-        return resultadoCalculado;
     }
 
     async rollAttackTest(
@@ -153,7 +152,11 @@ export class OwlbearService implements IOwlbearService {
         options?: AttackRollOptions
     ): Promise<DamageRollResult> {
         const situationalModifier = options?.situationalModifier ?? 0;
-        const diceNotation = buildDamageRollNotation(fullDamage, situationalModifier);
+        const diceNotation = buildDamageRollNotationForDicePlus(
+            fullDamage,
+            situationalModifier,
+            halve
+        );
         if (!diceNotation) {
             throw new Error("Notação de dano inválida para rolagem.");
         }
@@ -162,8 +165,12 @@ export class OwlbearService implements IOwlbearService {
             ? await rollDicePlusGeneric(diceNotation)
             : devGenericDiceRoll(diceNotation);
 
-        const rawTotal = results.totalValue;
-        const total = halve ? halveDamageTotal(rawTotal) : rawTotal;
+        const rawTotal = computeDamageRawTotal(
+            results.diceValues,
+            fullDamage,
+            situationalModifier
+        );
+        const total = halve ? halveDamageTotal(rawTotal) : results.totalValue;
 
         return {
             diceValues: results.diceValues,

@@ -2,9 +2,7 @@ export interface MeleeAttack {
     id: string;
     name: string;
     attributeAbbreviation: string;
-    /** Atributo somado ao dano; vazio = regra padrão (PRE→PER, LUT→FOR). */
     damageAttributeAbbreviation?: string;
-    /** Grupo de armas (treinamento, bônus de foco +2 no ataque). */
     weaponGroup?: string;
     damage: string;
 }
@@ -31,9 +29,7 @@ export interface Habilidades {
     meleeAttacks: MeleeAttack[];
     rangedAttacks: RangedAttack[];
     weaponGroups: string;
-    /** Guerreira Arcana: ataques com Luta usam Vontade no dano em vez de Força. */
     lutUsesWillpowerForDamage?: boolean;
-    /** GM habilita a opção Modo Guerreira Arcana nesta ficha. */
     arcaneWarriorOptionEnabled?: boolean;
     classAbilities: ClassAbility[];
 }

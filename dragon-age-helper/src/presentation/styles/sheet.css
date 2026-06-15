@@ -268,7 +268,6 @@
     opacity: 0.7;
 }
 
-/* Header form */
 .sheet-header-form {
     padding: 0.75rem 0.75rem 0;
     display: flex;
@@ -312,7 +311,6 @@
     font-style: italic;
 }
 
-/* Tabs */
 .sheet-tabs {
     display: flex;
     gap: 0.25rem;
@@ -414,7 +412,6 @@
     user-select: none;
 }
 
-/* Attribute strip row */
 .attribute-strip {
     display: flex;
     gap: 0.25rem;
@@ -912,7 +909,6 @@
     border-radius: 4px;
 }
 
-/* Habilidades */
 .habilidades-panel {
     display: flex;
     flex-direction: column;
@@ -1109,13 +1105,20 @@
     font-variant-numeric: tabular-nums;
 }
 
-.habilidades-table__row--untrained td {
-    background: color-mix(in srgb, var(--da-red) 6%, var(--da-white)) !important;
+.habilidades-table__row--untrained .habilidades-table__roll-btn,
+.habilidades-table__row--untrained .habilidades-table__input,
+.habilidades-table__row--untrained .habilidades-table__select,
+.habilidades-table__row--untrained .habilidades-table__attack-value,
+.habilidades-table__row--untrained .habilidades-table__damage-roll {
+    color: var(--da-red-untrained);
+}
+
+.habilidades-table__row--untrained .habilidades-table__placeholder {
+    color: color-mix(in srgb, var(--da-red-untrained) 55%, var(--da-muted));
 }
 
 .habilidades-table__input--untrained {
-    color: var(--da-red-dark);
-    font-weight: 600;
+    color: var(--da-red-untrained);
 }
 
 .habilidades-attacks__gm-option {
@@ -1160,8 +1163,9 @@
 
 .habilidades-table__input--damage-base {
     font-size: var(--sheet-text-xs);
+    color: var(--da-muted);
     padding-top: 0.3rem;
-    padding-bottom: 0.2rem;
+    padding-bottom: 0.15rem;
 }
 
 .habilidades-table__damage-roll {
@@ -1169,16 +1173,26 @@
     width: 100%;
     border: none;
     background: transparent;
-    font-size: var(--sheet-text-xs);
-    color: var(--da-muted);
-    padding: 0 0.4rem 0.35rem;
+    font-size: var(--sheet-text-md);
+    font-weight: 700;
+    color: var(--da-red);
+    padding: 0.1rem 0.4rem 0.4rem;
     text-align: left;
     cursor: pointer;
     font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+}
+
+.habilidades-table__row--untrained .habilidades-table__input--damage-base {
+    color: color-mix(in srgb, var(--da-red-untrained) 40%, var(--da-muted));
 }
 
 .habilidades-table__damage-roll:hover:not(:disabled) {
     color: var(--da-red);
+}
+
+.habilidades-table__row--untrained .habilidades-table__damage-roll:hover:not(:disabled) {
+    color: color-mix(in srgb, var(--da-red-untrained) 85%, var(--da-red));
 }
 
 .habilidades-table__details-row td {

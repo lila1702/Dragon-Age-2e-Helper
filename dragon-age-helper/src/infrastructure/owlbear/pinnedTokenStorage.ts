@@ -16,7 +16,6 @@ export function writePinnedToken(roomId: string, playerId: string, tokenId: stri
     try {
         localStorage.setItem(storageKey(roomId, playerId), tokenId);
     } catch {
-        // localStorage may be unavailable in some embed contexts
     }
 }
 
@@ -24,6 +23,5 @@ export function clearPinnedToken(roomId: string, playerId: string): void {
     try {
         localStorage.removeItem(storageKey(roomId, playerId));
     } catch {
-        // ignore
     }
 }

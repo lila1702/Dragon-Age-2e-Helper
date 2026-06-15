@@ -2,10 +2,8 @@ import OBR from "@owlbear-rodeo/sdk";
 
 import type { DicePlusRollEnvelope, GenericDiceRollResult } from "./owlbear-dice";
 
-/** Identificador usado nos canais de resultado do Dice+ (`{source}/roll-result`). */
 export const DICE_PLUS_SOURCE = "com.dragonagehelper";
 
-/** 2× Vermelho + 1× Dragão — o terceiro dado é o dado de façanha. */
 export const ATTRIBUTE_TEST_NOTATION =
     "1d6{Vermelho} + 1d6{Vermelho} + 1d6{Dragão}";
 
@@ -136,6 +134,27 @@ function isRollInProgressError(error: unknown): boolean {
     return error instanceof Error && ROLL_IN_PROGRESS_PATTERN.test(error.message);
 }
 
+async function broadcastDicePlusRollRequest(
+    diceNotation: string,
+    showResults: boolean,
+    rollId: string
+): Promise<void> {
+    await OBR.broadcast.sendMessage(
+        ROLL_REQUEST_CHANNEL,
+        {
+            rollId,
+            playerId: OBR.player.id,
+            playerName: await OBR.player.getName(),
+            rollTarget: "everyone",
+            diceNotation,
+            showResults,
+            timestamp: Date.now(),
+            source: DICE_PLUS_SOURCE,
+        },
+        { destination: "ALL" }
+    );
+}
+
 async function rollDicePlusOnce(diceNotation: string): Promise<DicePlusRollEnvelope> {
     const rollId = createRollId();
     const resultChannel = `${DICE_PLUS_SOURCE}/roll-result`;
@@ -188,20 +207,7 @@ async function rollDicePlusOnce(diceNotation: string): Promise<DicePlusRollEnvel
 
         void (async () => {
             try {
-                await OBR.broadcast.sendMessage(
-                    ROLL_REQUEST_CHANNEL,
-                    {
-                        rollId,
-                        playerId: OBR.player.id,
-                        playerName: await OBR.player.getName(),
-                        rollTarget: "everyone",
-                        diceNotation,
-                        showResults: true,
-                        timestamp: Date.now(),
-                        source: DICE_PLUS_SOURCE,
-                    },
-                    { destination: "ALL" }
-                );
+                await broadcastDicePlusRollRequest(diceNotation, true, rollId);
             } catch (error) {
                 finishReject(
                     error instanceof Error
@@ -293,20 +299,7 @@ async function rollDicePlusGenericOnce(diceNotation: string): Promise<GenericDic
 
         void (async () => {
             try {
-                await OBR.broadcast.sendMessage(
-                    ROLL_REQUEST_CHANNEL,
-                    {
-                        rollId,
-                        playerId: OBR.player.id,
-                        playerName: await OBR.player.getName(),
-                        rollTarget: "everyone",
-                        diceNotation,
-                        showResults: true,
-                        timestamp: Date.now(),
-                        source: DICE_PLUS_SOURCE,
-                    },
-                    { destination: "ALL" }
-                );
+                await broadcastDicePlusRollRequest(diceNotation, true, rollId);
             } catch (error) {
                 finishReject(
                     error instanceof Error
