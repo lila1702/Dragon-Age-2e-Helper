@@ -1,5 +1,5 @@
 import { METADATA_KEYS, SCHEMA_VERSION } from "./metadataKeys";
-import { getSheetOwnerId } from "./tokenAccess";
+import { readMetadataOwnerId } from "./tokenAccess";
 import { setTokenBarValues } from "./tokenBars";
 
 import type { Item } from "@owlbear-rodeo/sdk";
@@ -10,8 +10,7 @@ export function applySheetMetadataToItem(
     sheetToSave: CharacterSheet,
     actingPlayerId: string
 ): void {
-    const existingOwner = getSheetOwnerId(item);
-    const ownerId = existingOwner ?? item.createdUserId ?? actingPlayerId;
+    const ownerId = item.createdUserId ?? readMetadataOwnerId(item) ?? actingPlayerId;
 
     item.metadata = {
         ...item.metadata,
