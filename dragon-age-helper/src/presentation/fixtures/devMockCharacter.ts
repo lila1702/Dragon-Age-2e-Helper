@@ -146,4 +146,23 @@ export const DEV_MOCK_CHARACTER: CharacterSheet = {
             description: "Magia de sangue que drena vitalidade do alvo.",
         },
     ],
+    inventory: {
+        items: [
+            {
+                id: "item_dev_clothes",
+                name: "Roupas de viajante",
+                saleValue: "",
+                description: "",
+                quantity: 1,
+            },
+            {
+                id: "item_dev_backpack",
+                name: "Mochila",
+                saleValue: "",
+                description: "Odre, corda 20m (2 PP), caderno…",
+                quantity: null,
+            },
+        ],
+        currency: { copper: 27, silver: 19, gold: 29 },
+    },
 };

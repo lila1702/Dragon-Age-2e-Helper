@@ -1,5 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 
+import { FocusContextMenu } from "./FocusContextMenu";
+
 import {
     ARCANA_SCHOOLS,
     getArcanasForSchool,
@@ -313,16 +315,10 @@ export function SpellsDegreeTable({
             </div>
 
             {nameContextMenu && (
-                <div
-                    ref={menuRef}
-                    className="focus-context-menu"
-                    role="menu"
-                    style={{
-                        position: "fixed",
-                        left: nameContextMenu.x,
-                        top: nameContextMenu.y,
-                        zIndex: 1000,
-                    }}
+                <FocusContextMenu
+                    x={nameContextMenu.x}
+                    y={nameContextMenu.y}
+                    menuRef={menuRef}
                 >
                     <button
                         type="button"
@@ -349,7 +345,7 @@ export function SpellsDegreeTable({
                     >
                         Excluir
                     </button>
-                </div>
+                </FocusContextMenu>
             )}
 
             {!disabled && (

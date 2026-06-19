@@ -1975,3 +1975,242 @@
 .magia-panel__add:hover {
     background: color-mix(in srgb, var(--da-mana) 10%, var(--da-white));
 }
+
+.inventario-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.inventario-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.inventario-section__title {
+    margin: 0;
+    padding: 0.45rem 0.6rem;
+    background: var(--da-black);
+    color: var(--da-white);
+    font-size: var(--sheet-text-sm);
+    font-weight: 700;
+    text-align: center;
+    border-radius: 4px 4px 0 0;
+}
+
+.inventario-table-wrap {
+    overflow-x: auto;
+}
+
+.inventario-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.inventario-table__col-item {
+    width: 22%;
+}
+
+.inventario-table__col-qty {
+    width: 3.75rem;
+}
+
+.inventario-table__col-value {
+    width: 3.25rem;
+}
+
+.inventario-table__col-delete {
+    width: 0.85rem;
+}
+
+.inventario-table thead th {
+    padding: 0.35rem 0.45rem;
+    background: var(--da-cell-bg);
+    border: 1px solid var(--da-black);
+    font-size: var(--sheet-text-xs);
+    font-weight: 700;
+    text-align: left;
+}
+
+.inventario-table thead th:nth-child(3),
+.inventario-table thead th:nth-child(4) {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    text-align: center;
+}
+
+.inventario-table__delete-head {
+    padding: 0 !important;
+    border-left: none;
+}
+
+.inventario-table tbody td {
+    padding: 0.25rem;
+    border: 1px solid var(--da-black);
+    vertical-align: top;
+}
+
+.inventario-table tbody td:nth-child(3),
+.inventario-table tbody td:nth-child(4) {
+    padding: 0.2rem 0.15rem;
+}
+
+.inventario-table__empty-row td {
+    padding: 0.6rem;
+    text-align: center;
+    color: var(--da-muted);
+    font-size: var(--sheet-text-xs);
+    font-style: italic;
+}
+
+.inventario-table__input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.25rem 0.35rem;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    background: transparent;
+    font-size: var(--sheet-text-xs);
+    color: var(--da-black);
+}
+
+.inventario-table__input:focus {
+    outline: none;
+    border-color: var(--da-red);
+    background: var(--da-white);
+}
+
+.inventario-table__input--name,
+.inventario-table__input--description {
+    font-size: var(--sheet-text-xxs);
+}
+
+.inventario-table__input--name {
+    font-weight: 700;
+}
+
+.inventario-table__input--qty,
+.inventario-table__input--value {
+    padding: 0.2rem 0.1rem;
+    font-size: var(--sheet-text-xxs);
+    text-align: center;
+}
+
+.inventario-table__input--qty {
+    width: 1.65rem;
+    min-width: 0;
+    flex: 0 0 auto;
+}
+
+.inventario-table__input--value {
+    min-width: 0;
+}
+
+.inventario-table__qty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+}
+
+.inventario-table__qty-toggle {
+    flex-shrink: 0;
+    padding: 0.05rem 0.2rem;
+    border: 1px solid var(--da-black);
+    border-radius: 2px;
+    background: var(--da-white);
+    font-size: 0.55rem;
+    line-height: 1.1;
+    cursor: pointer;
+}
+
+.inventario-table__qty-toggle:hover {
+    background: color-mix(in srgb, var(--da-red) 8%, var(--da-white));
+}
+
+.inventario-table__delete-zone {
+    padding: 0 !important;
+    background: color-mix(in srgb, var(--da-black) 3%, var(--da-white));
+    cursor: context-menu;
+}
+
+.inventario-section__add {
+    align-self: flex-start;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid var(--da-black);
+    border-radius: 4px;
+    background: var(--da-white);
+    color: var(--da-black);
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.inventario-section__add:hover {
+    background: color-mix(in srgb, var(--da-red) 8%, var(--da-white));
+}
+
+.inventario-currency {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid var(--da-black);
+    border-top: none;
+}
+
+.inventario-currency__field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border-right: 1px solid var(--da-black);
+}
+
+.inventario-currency__field:last-child {
+    border-right: none;
+}
+
+.inventario-currency__label {
+    padding: 0.35rem 0.45rem;
+    background: var(--da-cell-bg);
+    border-bottom: 1px solid var(--da-black);
+    font-size: var(--sheet-text-xs);
+    font-weight: 700;
+    text-align: center;
+}
+
+.inventario-currency__input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.45rem;
+    border: none;
+    background: var(--da-white);
+    font-size: var(--sheet-text-lg);
+    font-weight: 700;
+    text-align: center;
+}
+
+.inventario-currency__input:focus {
+    outline: 2px solid var(--da-red);
+    outline-offset: -2px;
+}
+
+.inventario-currency__input:read-only:not(:disabled) {
+    cursor: pointer;
+}
+
+.inventario-currency__label--copper,
+.inventario-currency__input--copper {
+    color: #b87333;
+}
+
+.inventario-currency__label--silver,
+.inventario-currency__input--silver {
+    color: #8a8a8a;
+}
+
+.inventario-currency__label--gold,
+.inventario-currency__input--gold {
+    color: #c9a227;
+}

@@ -1,4 +1,4 @@
-export type SheetTabId = "atributos" | "habilidades" | "talentos" | "magia";
+export type SheetTabId = "atributos" | "habilidades" | "talentos" | "magia" | "inventario";
 
 interface SheetTab {
     id: SheetTabId;
@@ -18,6 +18,7 @@ export function SheetTabs({ activeTab, onTabChange, showMagicTab }: SheetTabsPro
         { id: "habilidades", label: "Habilidades" },
         { id: "talentos", label: "Talentos" },
         { id: "magia", label: "Magia", hidden: !showMagicTab },
+        { id: "inventario", label: "Inventário" },
     ];
 
     return (

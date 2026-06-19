@@ -1,5 +1,6 @@
 import type { ArcanaSpecialization } from "./especializacoesArcanas";
 import type { Habilidades } from "./habilidades";
+import type { Inventory } from "./inventario";
 import type { Spell } from "./magias";
 import type { Talent } from "./talentos";
 export interface Attribute {
@@ -37,4 +38,6 @@ export interface CharacterSheet {
     habilidades?: Habilidades;
     talents: Talent[];
     arcanaSpecializations: ArcanaSpecialization[];
-    spells: Spell[];}
+    spells: Spell[];
+    inventory: Inventory;
+}

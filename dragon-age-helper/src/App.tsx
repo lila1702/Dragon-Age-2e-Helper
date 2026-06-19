@@ -64,6 +64,10 @@ function App() {
         addSpell,
         updateSpell,
         removeSpell,
+        addInventoryItem,
+        updateInventoryItem,
+        removeInventoryItem,
+        updateCurrency,
     } = useCharacterSheet();
 
     const { isGM } = usePlayerRole(isObrReady);
@@ -133,6 +137,10 @@ function App() {
             onAddSpell={addSpell}
             onUpdateSpell={updateSpell}
             onRemoveSpell={removeSpell}
+            onAddInventoryItem={addInventoryItem}
+            onUpdateInventoryItem={updateInventoryItem}
+            onRemoveInventoryItem={removeInventoryItem}
+            onUpdateCurrency={updateCurrency}
         />
     );
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { AttributeStripRow } from "./AttributeStripRow";
 import { HabilidadesPanel } from "./HabilidadesPanel";
+import { InventarioPanel } from "./InventarioPanel";
 import { MagiaPanel } from "./MagiaPanel";
 import { SheetHeaderForm } from "./SheetHeaderForm";
 import { SheetTabs } from "./SheetTabs";
@@ -13,6 +14,7 @@ import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entiti
 import type { ClassAbility, MeleeAttack, RangedAttack } from "../../domain/entities/habilidades";
 import type { Spell, SpellDegree } from "../../domain/entities/magias";
 import type { Talent } from "../../domain/entities/talentos";
+import type { Currency, InventoryItem } from "../../domain/entities/inventario";
 import type { ArcanaSpecialization } from "../../domain/entities/especializacoesArcanas";
 import type { AttackRollOptions } from "../../domain/entities/attackRoll";
 import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
@@ -87,6 +89,10 @@ export interface CharacterSheetViewProps {
     onAddSpell: (degree: SpellDegree) => void;
     onUpdateSpell: (id: string, patch: Partial<Spell>) => void;
     onRemoveSpell: (id: string) => void;
+    onAddInventoryItem: () => void;
+    onUpdateInventoryItem: (id: string, patch: Partial<InventoryItem>) => void;
+    onRemoveInventoryItem: (id: string) => void;
+    onUpdateCurrency: (patch: Partial<Currency>) => void;
 }
 
 export function CharacterSheetView({
@@ -148,6 +154,10 @@ export function CharacterSheetView({
     onAddSpell,
     onUpdateSpell,
     onRemoveSpell,
+    onAddInventoryItem,
+    onUpdateInventoryItem,
+    onRemoveInventoryItem,
+    onUpdateCurrency,
 }: CharacterSheetViewProps) {
     const [activeTab, setActiveTab] = useState<SheetTabId>("atributos");
 
@@ -259,6 +269,17 @@ export function CharacterSheetView({
                             onAddSpell={onAddSpell}
                             onUpdateSpell={onUpdateSpell}
                             onRemoveSpell={onRemoveSpell}
+                        />
+                    )}
+                    {activeTab === "inventario" && (
+                        <InventarioPanel
+                            items={sheet.inventory.items}
+                            currency={sheet.inventory.currency}
+                            disabled={formDisabled}
+                            onAddItem={onAddInventoryItem}
+                            onUpdateItem={onUpdateInventoryItem}
+                            onRemoveItem={onRemoveInventoryItem}
+                            onUpdateCurrency={onUpdateCurrency}
                         />
                     )}
                 </div>

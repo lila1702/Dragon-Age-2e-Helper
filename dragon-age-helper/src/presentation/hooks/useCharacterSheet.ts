@@ -15,6 +15,7 @@ import {
     createEmptyMeleeAttack,
     createEmptyRangedAttack,
 } from "../../domain/entities/habilidades";
+import { createEmptyInventoryItem, normalizeCurrency } from "../../domain/entities/inventario";
 import { createEmptySpell, type SpellDegree } from "../../domain/entities/magias";
 import { createEmptyArcanaSpecialization } from "../../domain/entities/especializacoesArcanas";
 import { createEmptyTalent } from "../../domain/entities/talentos";
@@ -22,6 +23,7 @@ import { createEmptyTalent } from "../../domain/entities/talentos";
 import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entities/characterSheet";
 import type { ClassAbility, MeleeAttack, RangedAttack } from "../../domain/entities/habilidades";
 import type { ArcanaSpecialization } from "../../domain/entities/especializacoesArcanas";
+import type { Currency, InventoryItem } from "../../domain/entities/inventario";
 import type { Spell } from "../../domain/entities/magias";
 import type { Talent } from "../../domain/entities/talentos";
 import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
@@ -984,6 +986,59 @@ export function useCharacterSheet() {
         [updateSheet]
     );
 
+    const addInventoryItem = useCallback(
+        () =>
+            updateSheet((prev) => ({
+                ...prev,
+                inventory: {
+                    ...prev.inventory,
+                    items: [...prev.inventory.items, createEmptyInventoryItem()],
+                },
+            })),
+        [updateSheet]
+    );
+
+    const updateInventoryItem = useCallback(
+        (id: string, patch: Partial<InventoryItem>) =>
+            updateSheet((prev) => ({
+                ...prev,
+                inventory: {
+                    ...prev.inventory,
+                    items: prev.inventory.items.map((item) =>
+                        item.id === id ? { ...item, ...patch } : item
+                    ),
+                },
+            })),
+        [updateSheet]
+    );
+
+    const removeInventoryItem = useCallback(
+        (id: string) =>
+            updateSheet((prev) => ({
+                ...prev,
+                inventory: {
+                    ...prev.inventory,
+                    items: prev.inventory.items.filter((item) => item.id !== id),
+                },
+            })),
+        [updateSheet]
+    );
+
+    const updateCurrency = useCallback(
+        (patch: Partial<Currency>) =>
+            updateSheet((prev) => ({
+                ...prev,
+                inventory: {
+                    ...prev.inventory,
+                    currency: normalizeCurrency({
+                        ...prev.inventory.currency,
+                        ...patch,
+                    }),
+                },
+            })),
+        [updateSheet]
+    );
+
     const canRoll = canEditSheet && (!isObrAvailable || isObrReady);
 
     return {
@@ -1046,6 +1101,10 @@ export function useCharacterSheet() {
         addSpell,
         updateSpell,
         removeSpell,
+        addInventoryItem,
+        updateInventoryItem,
+        removeInventoryItem,
+        updateCurrency,
     };
 }
 

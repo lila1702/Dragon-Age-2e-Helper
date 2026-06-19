@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 
+import { FocusContextMenu } from "./FocusContextMenu";
 import { RollSituationalModal } from "./RollSituationalModal";
 
 import { ATTRIBUTE_DEFINITIONS } from "../../domain/entities/attributeDefinitions";
@@ -509,16 +510,10 @@ export function AttackRowsTable<T extends AttackRow>({
             </tbody>
 
             {nameContextMenu && (
-                <div
-                    ref={menuRef}
-                    className="focus-context-menu"
-                    role="menu"
-                    style={{
-                        position: "fixed",
-                        left: nameContextMenu.x,
-                        top: nameContextMenu.y,
-                        zIndex: 1000,
-                    }}
+                <FocusContextMenu
+                    x={nameContextMenu.x}
+                    y={nameContextMenu.y}
+                    menuRef={menuRef}
                 >
                     <button
                         type="button"
@@ -560,7 +555,7 @@ export function AttackRowsTable<T extends AttackRow>({
                             Excluir
                         </button>
                     )}
-                </div>
+                </FocusContextMenu>
             )}
 
             <RollSituationalModal

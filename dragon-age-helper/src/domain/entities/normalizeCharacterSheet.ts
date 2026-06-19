@@ -9,6 +9,12 @@ import {
     type ArcanaSpecialization,
     type SpecializationBenefits,
 } from "./especializacoesArcanas";
+import {
+    createEmptyInventory,
+    normalizeCurrency,
+    type Inventory,
+    type InventoryItem,
+} from "./inventario";
 import { isSpellDegree, type Spell } from "./magias";
 import {
     createEmptyTalentBenefits,
@@ -488,6 +494,60 @@ function parseNumber(value: unknown, fallback: number): number {
     return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
+function parseInventoryQuantity(raw: unknown): number | null {
+    if (raw === null || raw === undefined) return null;
+    if (typeof raw === "string") {
+        const trimmed = raw.trim();
+        if (!trimmed || trimmed === "--" || trimmed === "—") return null;
+        const parsed = Number.parseInt(trimmed, 10);
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+    if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+    return null;
+}
+
+function parseInventoryItems(raw: unknown): InventoryItem[] {
+    if (!Array.isArray(raw)) return [];
+
+    return raw
+        .map((entry) => {
+            if (!isRecord(entry)) return null;
+
+            const name = typeof entry.name === "string" ? entry.name.trim() : "";
+            if (!name) return null;
+
+            const saleValue = typeof entry.saleValue === "string" ? entry.saleValue : "";
+            const description = typeof entry.description === "string" ? entry.description : "";
+            const quantity = parseInventoryQuantity(entry.quantity);
+
+            return {
+                id: parseId(entry.id),
+                name,
+                saleValue,
+                description,
+                quantity,
+            };
+        })
+        .filter((entry): entry is InventoryItem => entry !== null);
+}
+
+function parseInventory(raw: unknown): Inventory {
+    const base = createEmptyInventory();
+
+    if (!isRecord(raw)) return base;
+
+    const currencyRaw = isRecord(raw.currency) ? raw.currency : null;
+
+    return {
+        items: parseInventoryItems(raw.items),
+        currency: normalizeCurrency({
+            copper: currencyRaw ? parseNumber(currencyRaw.copper, 0) : 0,
+            silver: currencyRaw ? parseNumber(currencyRaw.silver, 0) : 0,
+            gold: currencyRaw ? parseNumber(currencyRaw.gold, 0) : 0,
+        }),
+    };
+}
+
 export function normalizeCharacterSheet(data: unknown, tokenId: string): CharacterSheet | null {
     if (!isRecord(data)) return null;
 
@@ -516,5 +576,6 @@ export function normalizeCharacterSheet(data: unknown, tokenId: string): Charact
             data.spells
         ),
         spells: parseSpells(data.spells),
+        inventory: parseInventory(data.inventory),
     };
 }
