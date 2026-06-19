@@ -61,6 +61,15 @@ export function SpellsDegreeTable({
 
             <div className="magia-table-wrap">
                 <table className="magia-table">
+                    <colgroup>
+                        <col className="magia-table__col-name" />
+                        <col className="magia-table__col-school" />
+                        <col className="magia-table__col-arcana" />
+                        <col className="magia-table__col-pm" />
+                        <col className="magia-table__col-time" />
+                        <col className="magia-table__col-tn" />
+                        <col className="magia-table__col-test" />
+                    </colgroup>
                     <thead>
                         <tr>
                             <th scope="col">Nome</th>

@@ -3,20 +3,33 @@ import {
     type Talent,
 } from "../../domain/entities/talentos";
 
+import type { ArcanaSpecialization } from "../../domain/entities/especializacoesArcanas";
+
+import { EspecializacoesArcanasPanel } from "./EspecializacoesArcanasPanel";
+import { AutoResizeTextarea } from "./AutoResizeTextarea";
+
 interface TalentosPanelProps {
     talents: Talent[];
+    specializations: ArcanaSpecialization[];
     disabled?: boolean;
     onAddTalent: () => void;
     onUpdateTalent: (id: string, patch: Partial<Talent>) => void;
     onRemoveTalent: (id: string) => void;
+    onAddSpecialization: () => void;
+    onUpdateSpecialization: (id: string, patch: Partial<ArcanaSpecialization>) => void;
+    onRemoveSpecialization: (id: string) => void;
 }
 
 export function TalentosPanel({
     talents,
+    specializations,
     disabled = false,
     onAddTalent,
     onUpdateTalent,
     onRemoveTalent,
+    onAddSpecialization,
+    onUpdateSpecialization,
+    onRemoveSpecialization,
 }: TalentosPanelProps) {
     return (
         <div className="talentos-panel" aria-label="Talentos">
@@ -62,13 +75,12 @@ export function TalentosPanel({
                                     </td>
                                     {TALENT_DEGREES.map((degree) => (
                                         <td key={degree}>
-                                            <textarea
+                                            <AutoResizeTextarea
                                                 className="talentos-table__textarea"
                                                 value={talent.benefits[degree]}
                                                 disabled={disabled}
                                                 aria-label={`${talent.name || "Talento"} — ${degree}`}
                                                 placeholder={`Descrição do grau ${degree.toLowerCase()}.`}
-                                                rows={3}
                                                 onChange={(event) =>
                                                     onUpdateTalent(talent.id, {
                                                         benefits: {
@@ -103,8 +115,14 @@ export function TalentosPanel({
                     + Talento
                 </button>
             )}
+
+            <EspecializacoesArcanasPanel
+                specializations={specializations}
+                disabled={disabled}
+                onAddSpecialization={onAddSpecialization}
+                onUpdateSpecialization={onUpdateSpecialization}
+                onRemoveSpecialization={onRemoveSpecialization}
+            />
         </div>
     );
 }
-
-export type { TalentDegree } from "../../domain/entities/talentos";

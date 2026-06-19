@@ -1,5 +1,6 @@
 .character-sheet {
     --sheet-text-xs: 0.8125rem;
+    --sheet-text-xxs: 0.6875rem;
     --sheet-text-sm: 0.9375rem;
     --sheet-text-md: 1.0625rem;
     --sheet-text-lg: 1.25rem;
@@ -1391,20 +1392,22 @@
 
 .talentos-table__input--name {
     min-width: 6rem;
+    font-size: var(--sheet-text-sm);
 }
 
 .talentos-table__textarea {
     width: 100%;
-    min-width: 8rem;
+    min-width: 0;
     border: 1px solid color-mix(in srgb, var(--da-black) 15%, transparent);
     border-radius: 3px;
     background: var(--da-white);
     font: inherit;
-    font-size: var(--sheet-text-sm);
-    line-height: 1.45;
-    padding: 0.4rem 0.45rem;
-    resize: vertical;
-    min-height: 3.5rem;
+    font-size: var(--sheet-text-xxs);
+    line-height: 1.4;
+    padding: 0.35rem 0.4rem;
+    resize: none;
+    overflow: hidden;
+    min-height: 2rem;
     box-sizing: border-box;
 }
 
@@ -1687,20 +1690,22 @@
 
 .magia-spec-table__input--name {
     min-width: 5.5rem;
+    font-size: var(--sheet-text-sm);
 }
 
 .magia-spec-table__textarea {
     width: 100%;
-    min-width: 7rem;
+    min-width: 0;
     border: 1px solid color-mix(in srgb, var(--da-black) 15%, transparent);
     border-radius: 3px;
     background: var(--da-white);
     font: inherit;
-    font-size: 0.68rem;
+    font-size: var(--sheet-text-xxs);
     line-height: 1.4;
     padding: 0.35rem 0.4rem;
-    resize: vertical;
-    min-height: 3rem;
+    resize: none;
+    overflow: hidden;
+    min-height: 2rem;
     box-sizing: border-box;
 }
 
@@ -1746,8 +1751,37 @@
 
 .magia-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     font-size: var(--sheet-text-xs);
+}
+
+.magia-table__col-name {
+    width: 17%;
+}
+
+.magia-table__col-school {
+    width: 14%;
+}
+
+.magia-table__col-arcana {
+    width: 18%;
+}
+
+.magia-table__col-pm {
+    width: 8%;
+}
+
+.magia-table__col-time {
+    width: 18%;
+}
+
+.magia-table__col-tn {
+    width: 8%;
+}
+
+.magia-table__col-test {
+    width: 17%;
 }
 
 .magia-table thead th {
@@ -1855,20 +1889,11 @@
     box-sizing: border-box;
 }
 
-.magia-table__input--school {
-    min-width: 4.5rem;
-}
-
-.magia-table__input--arcana {
-    min-width: 5.5rem;
-}
-
-.magia-table__input--time {
-    min-width: 5rem;
-}
-
+.magia-table__input--school,
+.magia-table__input--arcana,
+.magia-table__input--time,
 .magia-table__input--test {
-    min-width: 5.5rem;
+    min-width: 0;
 }
 
 .magia-description__arcana {
@@ -1877,7 +1902,8 @@
 }
 
 .magia-table__input--number {
-    width: 2.5rem;
+    width: 100%;
+    max-width: 100%;
     text-align: center;
     font-variant-numeric: tabular-nums;
 }

@@ -1,3 +1,5 @@
+import { AutoResizeTextarea } from "./AutoResizeTextarea";
+
 import {
     SPECIALIZATION_DEGREES,
     type ArcanaSpecialization,
@@ -64,13 +66,12 @@ export function EspecializacoesArcanasPanel({
                                     </td>
                                     {SPECIALIZATION_DEGREES.map((degree) => (
                                         <td key={degree}>
-                                            <textarea
+                                            <AutoResizeTextarea
                                                 className="magia-spec-table__textarea"
                                                 value={entry.benefits[degree]}
                                                 disabled={disabled}
                                                 aria-label={`${entry.name || "Especialização"} — ${degree}`}
                                                 placeholder={`Descrição do grau ${degree.toLowerCase()}.`}
-                                                rows={3}
                                                 onChange={(event) =>
                                                     onUpdateSpecialization(entry.id, {
                                                         benefits: {

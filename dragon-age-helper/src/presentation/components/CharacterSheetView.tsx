@@ -241,24 +241,24 @@ export function CharacterSheetView({
                     {activeTab === "talentos" && (
                         <TalentosPanel
                             talents={sheet.talents}
+                            specializations={sheet.arcanaSpecializations}
                             disabled={formDisabled}
                             onAddTalent={onAddTalent}
                             onUpdateTalent={onUpdateTalent}
                             onRemoveTalent={onRemoveTalent}
+                            onAddSpecialization={onAddArcanaSpecialization}
+                            onUpdateSpecialization={onUpdateArcanaSpecialization}
+                            onRemoveSpecialization={onRemoveArcanaSpecialization}
                         />
                     )}
                     {activeTab === "magia" && (
                         <MagiaPanel
                             spells={sheet.spells}
-                            specializations={sheet.arcanaSpecializations}
                             attributes={sheet.attributes}
                             disabled={formDisabled}
                             onAddSpell={onAddSpell}
                             onUpdateSpell={onUpdateSpell}
                             onRemoveSpell={onRemoveSpell}
-                            onAddSpecialization={onAddArcanaSpecialization}
-                            onUpdateSpecialization={onUpdateArcanaSpecialization}
-                            onRemoveSpecialization={onRemoveArcanaSpecialization}
                         />
                     )}
                 </div>

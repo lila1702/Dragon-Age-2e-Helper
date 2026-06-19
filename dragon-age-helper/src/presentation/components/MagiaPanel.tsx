@@ -7,35 +7,25 @@ import {
 } from "../../domain/entities/magias";
 
 import type { Attribute } from "../../domain/entities/characterSheet";
-import type { ArcanaSpecialization } from "../../domain/entities/especializacoesArcanas";
 
-import { EspecializacoesArcanasPanel } from "./EspecializacoesArcanasPanel";
 import { SpellsDegreeTable } from "./SpellsDegreeTable";
 
 interface MagiaPanelProps {
     spells: Spell[];
-    specializations: ArcanaSpecialization[];
     attributes: Attribute[];
     disabled?: boolean;
     onAddSpell: (degree: SpellDegree) => void;
     onUpdateSpell: (id: string, patch: Partial<Spell>) => void;
     onRemoveSpell: (id: string) => void;
-    onAddSpecialization: () => void;
-    onUpdateSpecialization: (id: string, patch: Partial<ArcanaSpecialization>) => void;
-    onRemoveSpecialization: (id: string) => void;
 }
 
 export function MagiaPanel({
     spells,
-    specializations,
     attributes,
     disabled = false,
     onAddSpell,
     onUpdateSpell,
     onRemoveSpell,
-    onAddSpecialization,
-    onUpdateSpecialization,
-    onRemoveSpecialization,
 }: MagiaPanelProps) {
     const spellpower = computeSpellpower(attributes);
 
@@ -60,14 +50,6 @@ export function MagiaPanel({
                     onRemoveSpell={onRemoveSpell}
                 />
             ))}
-
-            <EspecializacoesArcanasPanel
-                specializations={specializations}
-                disabled={disabled}
-                onAddSpecialization={onAddSpecialization}
-                onUpdateSpecialization={onUpdateSpecialization}
-                onRemoveSpecialization={onRemoveSpecialization}
-            />
         </div>
     );
 }
