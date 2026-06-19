@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { Attribute } from "../../domain/entities/characterSheet";
+import { FocusContextMenu } from "./FocusContextMenu";
 
 interface AttributeValueInputProps {
     attribute: Attribute;
@@ -112,12 +113,7 @@ export function AttributeValueInput({
             </button>
 
             {contextMenu && (
-                <div
-                    ref={menuRef}
-                    className="focus-context-menu"
-                    role="menu"
-                    style={{ left: contextMenu.x, top: contextMenu.y }}
-                >
+                <FocusContextMenu x={contextMenu.x} y={contextMenu.y} menuRef={menuRef}>
                     <button
                         type="button"
                         className="focus-context-menu__item"
@@ -139,7 +135,7 @@ export function AttributeValueInput({
                             Rolagem Situacional…
                         </button>
                     )}
-                </div>
+                </FocusContextMenu>
             )}
         </>
     );

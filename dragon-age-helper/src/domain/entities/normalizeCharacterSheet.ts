@@ -1,10 +1,28 @@
 import { parseNameAndAttribute } from "./attackBonus";
 import { normalizeReloadAction } from "./weaponReload";
 import { ATTRIBUTE_DEFINITIONS } from "./attributeDefinitions";
+import { createEmptyHabilidades, createHabilidadeId } from "./habilidades";
 import {
-    createEmptyHabilidades,
-    createHabilidadeId,
-} from "./habilidades";
+    createArcanaSpecializationId,
+    createEmptySpecializationBenefits,
+    isSpecializationDegree,
+    type ArcanaSpecialization,
+    type SpecializationBenefits,
+} from "./especializacoesArcanas";
+import {
+    createEmptyInventory,
+    normalizeCurrency,
+    type Inventory,
+    type InventoryItem,
+} from "./inventario";
+import { isSpellDegree, type Spell } from "./magias";
+import {
+    createEmptyTalentBenefits,
+    isTalentDegree,
+    TALENT_DEGREES,
+    type Talent,
+    type TalentBenefits,
+} from "./talentos";
 import { createSheetId } from "./createEmptySheet";
 
 import type {
@@ -185,6 +203,249 @@ function parseHabilidades(data: Record<string, unknown>): Habilidades {
     return createEmptyHabilidades();
 }
 
+function parseTalentBenefits(entry: Record<string, unknown>): TalentBenefits {
+    const benefits = createEmptyTalentBenefits();
+
+    if (isRecord(entry.benefits)) {
+        for (const degree of TALENT_DEGREES) {
+            const value = entry.benefits[degree];
+            if (typeof value === "string") {
+                benefits[degree] = value;
+            }
+        }
+        return benefits;
+    }
+
+    for (const degree of TALENT_DEGREES) {
+        const key = degree.toLowerCase();
+        if (typeof entry[key] === "string") {
+            benefits[degree] = entry[key];
+        }
+    }
+
+    const degreeRaw = typeof entry.degree === "string" ? entry.degree : "";
+    const degree = isTalentDegree(degreeRaw) ? degreeRaw : null;
+    const legacyBenefit = typeof entry.benefit === "string" ? entry.benefit : "";
+
+    if (degree && legacyBenefit) {
+        benefits[degree] = legacyBenefit;
+    }
+
+    return benefits;
+}
+
+function mergeTalentRows(existing: Talent, incoming: Talent): Talent {
+    const benefits = { ...existing.benefits };
+
+    for (const degree of TALENT_DEGREES) {
+        if (incoming.benefits[degree].trim() && !benefits[degree].trim()) {
+            benefits[degree] = incoming.benefits[degree];
+        }
+    }
+
+    return {
+        ...existing,
+        name: existing.name || incoming.name,
+        benefits,
+    };
+}
+
+function parseTalents(raw: unknown): Talent[] {
+    if (!Array.isArray(raw)) return [];
+
+    const byKey = new Map<string, Talent>();
+    const order: string[] = [];
+
+    for (const entry of raw) {
+        if (!isRecord(entry)) continue;
+
+        const name = typeof entry.name === "string" ? entry.name.trim() : "";
+        const benefits = parseTalentBenefits(entry);
+        const hasContent =
+            name.length > 0 || TALENT_DEGREES.some((degree) => benefits[degree].trim().length > 0);
+
+        if (!hasContent) continue;
+
+        const parsed: Talent = {
+            id: parseId(entry.id),
+            name,
+            benefits,
+        };
+
+        const key = name ? name.toLowerCase() : parsed.id;
+        const existing = byKey.get(key);
+
+        if (existing) {
+            byKey.set(key, mergeTalentRows(existing, parsed));
+        } else {
+            byKey.set(key, parsed);
+            order.push(key);
+        }
+    }
+
+    return order.map((key) => byKey.get(key)!);
+}
+
+function parseSpecializationBenefits(entry: Record<string, unknown>): SpecializationBenefits {
+    const benefits = createEmptySpecializationBenefits();
+
+    if (isRecord(entry.benefits)) {
+        for (const degree of TALENT_DEGREES) {
+            const value = entry.benefits[degree];
+            if (typeof value === "string") {
+                benefits[degree] = value;
+            }
+        }
+        return benefits;
+    }
+
+    for (const degree of TALENT_DEGREES) {
+        const key = degree.toLowerCase();
+        if (typeof entry[key] === "string") {
+            benefits[degree] = entry[key];
+        }
+    }
+
+    const degreeRaw = typeof entry.degree === "string" ? entry.degree : "";
+    const degree = isSpecializationDegree(degreeRaw) ? degreeRaw : null;
+    const legacyBenefit = typeof entry.benefit === "string" ? entry.benefit : "";
+
+    if (degree && legacyBenefit) {
+        benefits[degree] = legacyBenefit;
+    }
+
+    return benefits;
+}
+
+function mergeSpecializationRows(
+    existing: ArcanaSpecialization,
+    incoming: ArcanaSpecialization
+): ArcanaSpecialization {
+    const benefits = { ...existing.benefits };
+
+    for (const degree of TALENT_DEGREES) {
+        if (incoming.benefits[degree].trim() && !benefits[degree].trim()) {
+            benefits[degree] = incoming.benefits[degree];
+        }
+    }
+
+    return {
+        ...existing,
+        name: existing.name || incoming.name,
+        benefits,
+    };
+}
+
+function parseArcanaSpecializations(raw: unknown): ArcanaSpecialization[] {
+    if (!Array.isArray(raw)) return [];
+
+    const byKey = new Map<string, ArcanaSpecialization>();
+    const order: string[] = [];
+
+    for (const entry of raw) {
+        if (!isRecord(entry)) continue;
+
+        const name = typeof entry.name === "string" ? entry.name.trim() : "";
+        const benefits = parseSpecializationBenefits(entry);
+        const hasContent =
+            name.length > 0 ||
+            TALENT_DEGREES.some((degree) => benefits[degree].trim().length > 0);
+
+        if (!hasContent) continue;
+
+        const parsed: ArcanaSpecialization = {
+            id: parseId(entry.id),
+            name,
+            benefits,
+        };
+
+        const key = name ? name.toLowerCase() : parsed.id;
+        const existing = byKey.get(key);
+
+        if (existing) {
+            byKey.set(key, mergeSpecializationRows(existing, parsed));
+        } else {
+            byKey.set(key, parsed);
+            order.push(key);
+        }
+    }
+
+    return order.map((key) => byKey.get(key)!);
+}
+
+function legacySpecializationFromSpell(entry: Record<string, unknown>): string {
+    return typeof entry.specialization === "string" ? entry.specialization.trim() : "";
+}
+
+function mergeLegacySpellSpecializations(
+    specializations: ArcanaSpecialization[],
+    spellsRaw: unknown
+): ArcanaSpecialization[] {
+    if (!Array.isArray(spellsRaw)) return specializations;
+
+    const knownNames = new Set(specializations.map((entry) => entry.name.toLowerCase()));
+    const merged = [...specializations];
+
+    for (const entry of spellsRaw) {
+        if (!isRecord(entry)) continue;
+
+        const legacyName = legacySpecializationFromSpell(entry);
+        if (!legacyName) continue;
+
+        const key = legacyName.toLowerCase();
+        if (knownNames.has(key)) continue;
+
+        knownNames.add(key);
+        merged.push({
+            id: createArcanaSpecializationId(),
+            name: legacyName,
+            benefits: createEmptySpecializationBenefits(),
+        });
+    }
+
+    return merged;
+}
+
+function parseSpells(raw: unknown): Spell[] {
+    if (!Array.isArray(raw)) return [];
+
+    return raw
+        .map((entry) => {
+            if (!isRecord(entry)) return null;
+
+            const name = typeof entry.name === "string" ? entry.name.trim() : "";
+            if (!name) return null;
+
+            const cost =
+                typeof entry.cost === "number" && Number.isFinite(entry.cost) ? entry.cost : 0;
+            const tn = typeof entry.tn === "number" && Number.isFinite(entry.tn) ? entry.tn : 10;
+
+            const school = typeof entry.school === "string" ? entry.school.trim() : "";
+            const arcanaRaw = typeof entry.arcana === "string" ? entry.arcana.trim() : "";
+            const legacySpecialization = legacySpecializationFromSpell(entry);
+            const arcana =
+                arcanaRaw ||
+                (legacySpecialization && !school ? legacySpecialization : "");
+
+            const degreeRaw = typeof entry.degree === "string" ? entry.degree : "Novato";
+            const degree = isSpellDegree(degreeRaw) ? degreeRaw : "Novato";
+
+            return {
+                id: parseId(entry.id),
+                degree,
+                name,
+                school,
+                arcana,
+                cost,
+                time: typeof entry.time === "string" ? entry.time : "",
+                tn,
+                test: typeof entry.test === "string" ? entry.test : "",
+                description: typeof entry.description === "string" ? entry.description : "",
+            };
+        })
+        .filter((entry): entry is Spell => entry !== null);
+}
+
 function mergeAttributes(raw: unknown): Attribute[] {
     const byAbbr = new Map<string, Partial<Attribute>>();
 
@@ -233,6 +494,60 @@ function parseNumber(value: unknown, fallback: number): number {
     return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
+function parseInventoryQuantity(raw: unknown): number | null {
+    if (raw === null || raw === undefined) return null;
+    if (typeof raw === "string") {
+        const trimmed = raw.trim();
+        if (!trimmed || trimmed === "--" || trimmed === "—") return null;
+        const parsed = Number.parseInt(trimmed, 10);
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+    if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+    return null;
+}
+
+function parseInventoryItems(raw: unknown): InventoryItem[] {
+    if (!Array.isArray(raw)) return [];
+
+    return raw
+        .map((entry) => {
+            if (!isRecord(entry)) return null;
+
+            const name = typeof entry.name === "string" ? entry.name.trim() : "";
+            if (!name) return null;
+
+            const saleValue = typeof entry.saleValue === "string" ? entry.saleValue : "";
+            const description = typeof entry.description === "string" ? entry.description : "";
+            const quantity = parseInventoryQuantity(entry.quantity);
+
+            return {
+                id: parseId(entry.id),
+                name,
+                saleValue,
+                description,
+                quantity,
+            };
+        })
+        .filter((entry): entry is InventoryItem => entry !== null);
+}
+
+function parseInventory(raw: unknown): Inventory {
+    const base = createEmptyInventory();
+
+    if (!isRecord(raw)) return base;
+
+    const currencyRaw = isRecord(raw.currency) ? raw.currency : null;
+
+    return {
+        items: parseInventoryItems(raw.items),
+        currency: normalizeCurrency({
+            copper: currencyRaw ? parseNumber(currencyRaw.copper, 0) : 0,
+            silver: currencyRaw ? parseNumber(currencyRaw.silver, 0) : 0,
+            gold: currencyRaw ? parseNumber(currencyRaw.gold, 0) : 0,
+        }),
+    };
+}
+
 export function normalizeCharacterSheet(data: unknown, tokenId: string): CharacterSheet | null {
     if (!isRecord(data)) return null;
 
@@ -255,5 +570,12 @@ export function normalizeCharacterSheet(data: unknown, tokenId: string): Charact
         mpCurrent: Math.min(parseNumber(data.mpCurrent, mpMax), mpMax),
         attributes: mergeAttributes(data.attributes),
         habilidades: parseHabilidades(data),
+        talents: parseTalents(data.talents),
+        arcanaSpecializations: mergeLegacySpellSpecializations(
+            parseArcanaSpecializations(data.arcanaSpecializations),
+            data.spells
+        ),
+        spells: parseSpells(data.spells),
+        inventory: parseInventory(data.inventory),
     };
 }

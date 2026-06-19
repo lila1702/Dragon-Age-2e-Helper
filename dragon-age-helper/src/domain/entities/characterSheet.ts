@@ -1,5 +1,8 @@
+import type { ArcanaSpecialization } from "./especializacoesArcanas";
 import type { Habilidades } from "./habilidades";
-
+import type { Inventory } from "./inventario";
+import type { Spell } from "./magias";
+import type { Talent } from "./talentos";
 export interface Attribute {
     name: string;
     abbreviation: string;
@@ -33,4 +36,8 @@ export interface CharacterSheet {
     mpMax: number;
     attributes: Attribute[];
     habilidades?: Habilidades;
+    talents: Talent[];
+    arcanaSpecializations: ArcanaSpecialization[];
+    spells: Spell[];
+    inventory: Inventory;
 }

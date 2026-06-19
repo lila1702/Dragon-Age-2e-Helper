@@ -1,5 +1,6 @@
 .character-sheet {
     --sheet-text-xs: 0.8125rem;
+    --sheet-text-xxs: 0.6875rem;
     --sheet-text-sm: 0.9375rem;
     --sheet-text-md: 1.0625rem;
     --sheet-text-lg: 1.25rem;
@@ -1334,4 +1335,882 @@
 
 .habilidades-class__remove:hover {
     text-decoration: underline;
+}
+
+.talentos-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.talentos-table-wrap {
+    overflow-x: auto;
+}
+
+.talentos-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--sheet-text-xs);
+}
+
+.talentos-table thead th {
+    padding: 0.4rem 0.35rem;
+    background: var(--da-black);
+    color: var(--da-white);
+    font-weight: 600;
+    text-align: left;
+}
+
+.talentos-table tbody td {
+    padding: 0.25rem 0.2rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--da-black) 12%, transparent);
+    vertical-align: top;
+}
+
+.talentos-table__empty-row td {
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    color: var(--da-muted);
+    font-style: italic;
+}
+
+.talentos-table__input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    color: var(--da-red);
+    padding: 0.35rem 0.3rem;
+    box-sizing: border-box;
+}
+
+.talentos-table__input:focus {
+    outline: none;
+    background: color-mix(in srgb, var(--da-red) 4%, var(--da-white));
+}
+
+.talentos-table__input--name {
+    min-width: 6rem;
+    font-size: var(--sheet-text-sm);
+}
+
+.talentos-table__textarea {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid color-mix(in srgb, var(--da-black) 15%, transparent);
+    border-radius: 3px;
+    background: var(--da-white);
+    font: inherit;
+    font-size: var(--sheet-text-xxs);
+    line-height: 1.4;
+    padding: 0.35rem 0.4rem;
+    resize: none;
+    overflow: hidden;
+    min-height: 2rem;
+    box-sizing: border-box;
+}
+
+.talentos-table__actions-head,
+.talentos-table__actions {
+    width: 4.5rem;
+    white-space: nowrap;
+}
+
+.talentos-table__remove {
+    border: none;
+    background: transparent;
+    color: var(--da-red-dark);
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.35rem 0.2rem;
+}
+
+.talentos-table__remove:hover {
+    text-decoration: underline;
+}
+
+.talentos-panel__add {
+    align-self: flex-start;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--da-black);
+    border-radius: 4px;
+    background: var(--da-white);
+    color: var(--da-black);
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.talentos-panel__add:hover {
+    background: color-mix(in srgb, var(--da-red) 8%, var(--da-white));
+}
+
+.talentos-degree {
+    border: 1px solid color-mix(in srgb, var(--da-black) 20%, transparent);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.talentos-degree__header {
+    padding: 0.45rem 0.6rem;
+    background: var(--da-black);
+    color: var(--da-white);
+    font-size: var(--sheet-text-sm);
+    font-weight: 700;
+}
+
+.talentos-degree__body {
+    padding: 0.55rem;
+    background: var(--da-white);
+}
+
+.talentos-degree__empty {
+    margin: 0 0 0.5rem;
+    font-size: var(--sheet-text-xs);
+    color: var(--da-muted);
+}
+
+.talentos-degree__list {
+    list-style: none;
+    margin: 0 0 0.5rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.talentos-degree__item {
+    border: 1px solid color-mix(in srgb, var(--da-black) 25%, transparent);
+    border-radius: 4px;
+    padding: 0.5rem;
+    background: color-mix(in srgb, var(--da-cell-bg) 25%, var(--da-white));
+}
+
+.talentos-degree__item-head {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.35rem;
+}
+
+.talentos-degree__name {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    color: var(--da-red);
+    padding: 0.15rem 0;
+}
+
+.talentos-degree__select {
+    border: 1px solid color-mix(in srgb, var(--da-black) 20%, transparent);
+    border-radius: 3px;
+    background: var(--da-white);
+    font: inherit;
+    font-size: var(--sheet-text-xs);
+    padding: 0.2rem 0.35rem;
+}
+
+.talentos-degree__benefit {
+    width: 100%;
+    border: 1px solid color-mix(in srgb, var(--da-black) 15%, transparent);
+    border-radius: 3px;
+    background: var(--da-white);
+    font: inherit;
+    font-size: var(--sheet-text-sm);
+    line-height: 1.45;
+    padding: 0.45rem 0.5rem;
+    resize: vertical;
+    min-height: 3.5rem;
+    box-sizing: border-box;
+}
+
+.talentos-degree__remove {
+    border: none;
+    background: transparent;
+    color: var(--da-red-dark);
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.talentos-degree__remove:hover {
+    text-decoration: underline;
+}
+
+.talentos-degree__add {
+    margin-top: 0.35rem;
+    align-self: flex-start;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--da-black);
+    border-radius: 4px;
+    background: var(--da-white);
+    color: var(--da-black);
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.talentos-degree__add:hover {
+    background: color-mix(in srgb, var(--da-red) 8%, var(--da-white));
+}
+
+.magia-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.magia-panel__summary {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid color-mix(in srgb, var(--da-black) 20%, transparent);
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--da-mana) 8%, var(--da-white));
+}
+
+.magia-panel__spellpower-label {
+    font-size: var(--sheet-text-sm);
+    font-weight: 700;
+    color: var(--da-black);
+}
+
+.magia-panel__spellpower-value {
+    font-size: var(--sheet-text-lg);
+    font-weight: 700;
+    color: var(--da-mana);
+    font-variant-numeric: tabular-nums;
+}
+
+.magia-panel__spellpower-note {
+    font-size: var(--sheet-text-xs);
+    color: var(--da-muted);
+}
+
+.magia-degree-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.magia-degree-section__title {
+    margin: 0;
+    padding: 0.45rem 0.6rem;
+    background: var(--da-black);
+    color: var(--da-white);
+    font-size: var(--sheet-text-sm);
+    font-weight: 700;
+    border-radius: 4px 4px 0 0;
+}
+
+.magia-degree-section__add {
+    align-self: flex-start;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid var(--da-black);
+    border-radius: 4px;
+    background: var(--da-white);
+    color: var(--da-black);
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.magia-degree-section__add:hover {
+    background: color-mix(in srgb, var(--da-red) 8%, var(--da-white));
+}
+
+.magia-spec-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid color-mix(in srgb, var(--da-black) 15%, transparent);
+}
+
+.magia-spec-section__title {
+    margin: 0;
+    font-size: var(--sheet-text-sm);
+    font-weight: 700;
+    color: var(--da-black);
+}
+
+.magia-spec-table-wrap {
+    overflow-x: auto;
+}
+
+.magia-spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.68rem;
+}
+
+.magia-spec-table thead th {
+    padding: 0.35rem 0.3rem;
+    background: var(--da-black);
+    color: var(--da-white);
+    font-weight: 600;
+    text-align: left;
+}
+
+.magia-spec-table tbody td {
+    padding: 0.2rem 0.15rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--da-black) 12%, transparent);
+    vertical-align: top;
+}
+
+.magia-spec-table__empty-row td {
+    padding: 0.65rem 0.45rem;
+    text-align: center;
+    color: var(--da-muted);
+    font-style: italic;
+}
+
+.magia-spec-table__input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    color: var(--da-red);
+    padding: 0.25rem 0.2rem;
+    box-sizing: border-box;
+}
+
+.magia-spec-table__input:focus {
+    outline: none;
+    background: color-mix(in srgb, var(--da-red) 4%, var(--da-white));
+}
+
+.magia-spec-table__input--name {
+    min-width: 5.5rem;
+    font-size: var(--sheet-text-sm);
+}
+
+.magia-spec-table__textarea {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid color-mix(in srgb, var(--da-black) 15%, transparent);
+    border-radius: 3px;
+    background: var(--da-white);
+    font: inherit;
+    font-size: var(--sheet-text-xxs);
+    line-height: 1.4;
+    padding: 0.35rem 0.4rem;
+    resize: none;
+    overflow: hidden;
+    min-height: 2rem;
+    box-sizing: border-box;
+}
+
+.magia-spec-table__actions-head,
+.magia-spec-table__actions {
+    width: 4rem;
+    white-space: nowrap;
+}
+
+.magia-spec-table__remove {
+    border: none;
+    background: transparent;
+    color: var(--da-red-dark);
+    font-size: 0.68rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.25rem 0.15rem;
+}
+
+.magia-spec-table__remove:hover {
+    text-decoration: underline;
+}
+
+.magia-spec-section__add {
+    align-self: flex-start;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid var(--da-black);
+    border-radius: 4px;
+    background: var(--da-white);
+    color: var(--da-black);
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.magia-spec-section__add:hover {
+    background: color-mix(in srgb, var(--da-red) 8%, var(--da-white));
+}
+
+.magia-table-wrap {
+    overflow-x: auto;
+}
+
+.magia-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: var(--sheet-text-xs);
+}
+
+.magia-table__col-name {
+    width: 17%;
+}
+
+.magia-table__col-school {
+    width: 14%;
+}
+
+.magia-table__col-arcana {
+    width: 18%;
+}
+
+.magia-table__col-pm {
+    width: 8%;
+}
+
+.magia-table__col-time {
+    width: 18%;
+}
+
+.magia-table__col-tn {
+    width: 8%;
+}
+
+.magia-table__col-test {
+    width: 17%;
+}
+
+.magia-table thead th {
+    padding: 0.4rem 0.35rem;
+    background: var(--da-black);
+    color: var(--da-white);
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.magia-table tbody td {
+    padding: 0.25rem 0.2rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--da-black) 12%, transparent);
+    vertical-align: top;
+}
+
+.magia-table__empty-row td {
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    color: var(--da-muted);
+    font-style: italic;
+}
+
+.magia-table__input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    padding: 0.35rem 0.3rem;
+    box-sizing: border-box;
+}
+
+.magia-table__input:focus {
+    outline: none;
+    background: color-mix(in srgb, var(--da-red) 4%, var(--da-white));
+}
+
+.magia-table__name-btn {
+    display: block;
+    width: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    color: var(--da-red);
+    text-align: left;
+    padding: 0.35rem 0.3rem;
+    cursor: pointer;
+}
+
+.magia-table__name-btn:hover {
+    background: color-mix(in srgb, var(--da-red) 6%, var(--da-white));
+}
+
+.magia-table__name-btn--open {
+    background: color-mix(in srgb, var(--da-red) 8%, var(--da-white));
+}
+
+.magia-table__name-placeholder {
+    font-weight: 400;
+    color: var(--da-muted);
+    font-style: italic;
+}
+
+.magia-table__input--name-edit {
+    font-weight: 700;
+    color: var(--da-red);
+}
+
+.magia-table__row--expanded td {
+    border-bottom: none;
+}
+
+.magia-table__description-row td {
+    padding: 0 0.3rem 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--da-black) 12%, transparent);
+    background: color-mix(in srgb, var(--da-red) 3%, var(--da-white));
+}
+
+.magia-table__description {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.magia-table__description-label {
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    color: var(--da-muted);
+}
+
+.magia-table__description-textarea {
+    width: 100%;
+    border: 1px solid color-mix(in srgb, var(--da-black) 15%, transparent);
+    border-radius: 3px;
+    background: var(--da-white);
+    font: inherit;
+    font-size: var(--sheet-text-sm);
+    line-height: 1.45;
+    padding: 0.45rem 0.5rem;
+    resize: vertical;
+    min-height: 4rem;
+    box-sizing: border-box;
+}
+
+.magia-table__input--school,
+.magia-table__input--arcana,
+.magia-table__input--time,
+.magia-table__input--test {
+    min-width: 0;
+}
+
+.magia-description__arcana {
+    font-weight: 400;
+    color: var(--da-muted);
+}
+
+.magia-table__input--number {
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.magia-table__actions-head,
+.magia-table__actions {
+    width: 4.5rem;
+    text-align: center;
+}
+
+.magia-table__remove {
+    border: none;
+    background: transparent;
+    color: var(--da-red-dark);
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.magia-table__remove:hover {
+    text-decoration: underline;
+}
+
+.magia-descriptions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.magia-description {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.magia-description__label {
+    font-size: var(--sheet-text-xs);
+    font-weight: 700;
+    color: var(--da-red);
+}
+
+.magia-description__textarea {
+    width: 100%;
+    border: 1px solid color-mix(in srgb, var(--da-black) 15%, transparent);
+    border-radius: 3px;
+    background: var(--da-white);
+    font: inherit;
+    font-size: var(--sheet-text-sm);
+    line-height: 1.45;
+    padding: 0.45rem 0.5rem;
+    resize: vertical;
+    min-height: 3.5rem;
+    box-sizing: border-box;
+}
+
+.magia-panel__add {
+    align-self: flex-start;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--da-black);
+    border-radius: 4px;
+    background: var(--da-white);
+    color: var(--da-black);
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.magia-panel__add:hover {
+    background: color-mix(in srgb, var(--da-mana) 10%, var(--da-white));
+}
+
+.inventario-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.inventario-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.inventario-section__title {
+    margin: 0;
+    padding: 0.45rem 0.6rem;
+    background: var(--da-black);
+    color: var(--da-white);
+    font-size: var(--sheet-text-sm);
+    font-weight: 700;
+    text-align: center;
+    border-radius: 4px 4px 0 0;
+}
+
+.inventario-table-wrap {
+    overflow-x: auto;
+}
+
+.inventario-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.inventario-table__col-item {
+    width: 22%;
+}
+
+.inventario-table__col-qty {
+    width: 3.75rem;
+}
+
+.inventario-table__col-value {
+    width: 3.25rem;
+}
+
+.inventario-table__col-delete {
+    width: 0.85rem;
+}
+
+.inventario-table thead th {
+    padding: 0.35rem 0.45rem;
+    background: var(--da-cell-bg);
+    border: 1px solid var(--da-black);
+    font-size: var(--sheet-text-xs);
+    font-weight: 700;
+    text-align: left;
+}
+
+.inventario-table thead th:nth-child(3),
+.inventario-table thead th:nth-child(4) {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    text-align: center;
+}
+
+.inventario-table__delete-head {
+    padding: 0 !important;
+    border-left: none;
+}
+
+.inventario-table tbody td {
+    padding: 0.25rem;
+    border: 1px solid var(--da-black);
+    vertical-align: top;
+}
+
+.inventario-table tbody td:nth-child(3),
+.inventario-table tbody td:nth-child(4) {
+    padding: 0.2rem 0.15rem;
+}
+
+.inventario-table__empty-row td {
+    padding: 0.6rem;
+    text-align: center;
+    color: var(--da-muted);
+    font-size: var(--sheet-text-xs);
+    font-style: italic;
+}
+
+.inventario-table__input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.25rem 0.35rem;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    background: transparent;
+    font-size: var(--sheet-text-xs);
+    color: var(--da-black);
+}
+
+.inventario-table__input:focus {
+    outline: none;
+    border-color: var(--da-red);
+    background: var(--da-white);
+}
+
+.inventario-table__input--name,
+.inventario-table__input--description {
+    font-size: var(--sheet-text-xxs);
+}
+
+.inventario-table__input--name {
+    font-weight: 700;
+}
+
+.inventario-table__input--qty,
+.inventario-table__input--value {
+    padding: 0.2rem 0.1rem;
+    font-size: var(--sheet-text-xxs);
+    text-align: center;
+}
+
+.inventario-table__input--qty {
+    width: 1.65rem;
+    min-width: 0;
+    flex: 0 0 auto;
+}
+
+.inventario-table__input--value {
+    min-width: 0;
+}
+
+.inventario-table__qty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+}
+
+.inventario-table__qty-toggle {
+    flex-shrink: 0;
+    padding: 0.05rem 0.2rem;
+    border: 1px solid var(--da-black);
+    border-radius: 2px;
+    background: var(--da-white);
+    font-size: 0.55rem;
+    line-height: 1.1;
+    cursor: pointer;
+}
+
+.inventario-table__qty-toggle:hover {
+    background: color-mix(in srgb, var(--da-red) 8%, var(--da-white));
+}
+
+.inventario-table__delete-zone {
+    padding: 0 !important;
+    background: color-mix(in srgb, var(--da-black) 3%, var(--da-white));
+    cursor: context-menu;
+}
+
+.inventario-section__add {
+    align-self: flex-start;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid var(--da-black);
+    border-radius: 4px;
+    background: var(--da-white);
+    color: var(--da-black);
+    font-size: var(--sheet-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.inventario-section__add:hover {
+    background: color-mix(in srgb, var(--da-red) 8%, var(--da-white));
+}
+
+.inventario-currency {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid var(--da-black);
+    border-top: none;
+}
+
+.inventario-currency__field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border-right: 1px solid var(--da-black);
+}
+
+.inventario-currency__field:last-child {
+    border-right: none;
+}
+
+.inventario-currency__label {
+    padding: 0.35rem 0.45rem;
+    background: var(--da-cell-bg);
+    border-bottom: 1px solid var(--da-black);
+    font-size: var(--sheet-text-xs);
+    font-weight: 700;
+    text-align: center;
+}
+
+.inventario-currency__input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.45rem;
+    border: none;
+    background: var(--da-white);
+    font-size: var(--sheet-text-lg);
+    font-weight: 700;
+    text-align: center;
+}
+
+.inventario-currency__input:focus {
+    outline: 2px solid var(--da-red);
+    outline-offset: -2px;
+}
+
+.inventario-currency__input:read-only:not(:disabled) {
+    cursor: pointer;
+}
+
+.inventario-currency__label--copper,
+.inventario-currency__input--copper {
+    color: #b87333;
+}
+
+.inventario-currency__label--silver,
+.inventario-currency__input--silver {
+    color: #8a8a8a;
+}
+
+.inventario-currency__label--gold,
+.inventario-currency__input--gold {
+    color: #c9a227;
 }

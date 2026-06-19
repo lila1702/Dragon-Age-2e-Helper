@@ -55,6 +55,19 @@ function App() {
         addClassAbility,
         updateClassAbility,
         removeClassAbility,
+        addTalent,
+        updateTalent,
+        removeTalent,
+        addArcanaSpecialization,
+        updateArcanaSpecialization,
+        removeArcanaSpecialization,
+        addSpell,
+        updateSpell,
+        removeSpell,
+        addInventoryItem,
+        updateInventoryItem,
+        removeInventoryItem,
+        updateCurrency,
     } = useCharacterSheet();
 
     const { isGM } = usePlayerRole(isObrReady);
@@ -115,6 +128,19 @@ function App() {
             onAddClassAbility={addClassAbility}
             onUpdateClassAbility={updateClassAbility}
             onRemoveClassAbility={removeClassAbility}
+            onAddTalent={addTalent}
+            onUpdateTalent={updateTalent}
+            onRemoveTalent={removeTalent}
+            onAddArcanaSpecialization={addArcanaSpecialization}
+            onUpdateArcanaSpecialization={updateArcanaSpecialization}
+            onRemoveArcanaSpecialization={removeArcanaSpecialization}
+            onAddSpell={addSpell}
+            onUpdateSpell={updateSpell}
+            onRemoveSpell={removeSpell}
+            onAddInventoryItem={addInventoryItem}
+            onUpdateInventoryItem={updateInventoryItem}
+            onRemoveInventoryItem={removeInventoryItem}
+            onUpdateCurrency={updateCurrency}
         />
     );
 }
