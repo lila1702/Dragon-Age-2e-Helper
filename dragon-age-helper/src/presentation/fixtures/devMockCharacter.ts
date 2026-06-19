@@ -79,4 +79,71 @@ export const DEV_MOCK_CHARACTER: CharacterSheet = {
             },
         ],
     },
+    talents: [
+        {
+            id: "talent_dev_contacts",
+            name: "Contatos",
+            benefits: {
+                Novato:
+                    "Tente tornar um NPC um Contato, jogando Comunicação (Persuasão).",
+                Experiente: "",
+                Mestre: "",
+            },
+        },
+        {
+            id: "talent_dev_armor",
+            name: "Armadura Pesada",
+            benefits: {
+                Novato: "Ignora a penalidade de armadura em testes baseados em Força.",
+                Experiente: "",
+                Mestre: "",
+            },
+        },
+        {
+            id: "talent_dev_shield",
+            name: "Especialista em Escudo",
+            benefits: {
+                Novato: "",
+                Experiente: "Bônus adicional ao usar escudo em defesa.",
+                Mestre: "",
+            },
+        },
+    ],
+    arcanaSpecializations: [
+        {
+            id: "spec_dev_blood",
+            name: "Arcana de Sangue",
+            benefits: {
+                Novato: "Magia proibida que manipula vitalidade.",
+                Experiente: "",
+                Mestre: "",
+            },
+        },
+    ],
+    spells: [
+        {
+            id: "spell_dev_flame",
+            name: "Chama",
+            degree: "Novato",
+            school: "Primal",
+            arcana: "Arcana do Fogo",
+            cost: 2,
+            time: "Ação Principal",
+            tn: 10,
+            test: "DES",
+            description: "Projétil ardente que causa dano de fogo.",
+        },
+        {
+            id: "spell_dev_blood",
+            name: "Drenar Vida",
+            degree: "Novato",
+            school: "",
+            arcana: "Arcana de Sangue",
+            cost: 3,
+            time: "Ação Principal",
+            tn: 10,
+            test: "CON (Difícil)",
+            description: "Magia de sangue que drena vitalidade do alvo.",
+        },
+    ],
 };

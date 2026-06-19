@@ -2,13 +2,18 @@ import { useState } from "react";
 
 import { AttributeStripRow } from "./AttributeStripRow";
 import { HabilidadesPanel } from "./HabilidadesPanel";
+import { MagiaPanel } from "./MagiaPanel";
 import { SheetHeaderForm } from "./SheetHeaderForm";
 import { SheetTabs } from "./SheetTabs";
+import { TalentosPanel } from "./TalentosPanel";
 import { TokenSelectionBar } from "./TokenSelectionBar";
 import type { SheetTabId } from "./SheetTabs";
 
 import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entities/characterSheet";
 import type { ClassAbility, MeleeAttack, RangedAttack } from "../../domain/entities/habilidades";
+import type { Spell, SpellDegree } from "../../domain/entities/magias";
+import type { Talent } from "../../domain/entities/talentos";
+import type { ArcanaSpecialization } from "../../domain/entities/especializacoesArcanas";
 import type { AttackRollOptions } from "../../domain/entities/attackRoll";
 import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
 
@@ -73,16 +78,15 @@ export interface CharacterSheetViewProps {
     onAddClassAbility: () => void;
     onUpdateClassAbility: (id: string, patch: Partial<ClassAbility>) => void;
     onRemoveClassAbility: (id: string) => void;
-}
-
-function PlaceholderTab({ label }: { label: string }) {
-    return (
-        <div className="sheet-placeholder">
-            <p>
-                Aba <strong>{label}</strong> — em breve.
-            </p>
-        </div>
-    );
+    onAddTalent: () => void;
+    onUpdateTalent: (id: string, patch: Partial<Talent>) => void;
+    onRemoveTalent: (id: string) => void;
+    onAddArcanaSpecialization: () => void;
+    onUpdateArcanaSpecialization: (id: string, patch: Partial<ArcanaSpecialization>) => void;
+    onRemoveArcanaSpecialization: (id: string) => void;
+    onAddSpell: (degree: SpellDegree) => void;
+    onUpdateSpell: (id: string, patch: Partial<Spell>) => void;
+    onRemoveSpell: (id: string) => void;
 }
 
 export function CharacterSheetView({
@@ -135,6 +139,15 @@ export function CharacterSheetView({
     onAddClassAbility,
     onUpdateClassAbility,
     onRemoveClassAbility,
+    onAddTalent,
+    onUpdateTalent,
+    onRemoveTalent,
+    onAddArcanaSpecialization,
+    onUpdateArcanaSpecialization,
+    onRemoveArcanaSpecialization,
+    onAddSpell,
+    onUpdateSpell,
+    onRemoveSpell,
 }: CharacterSheetViewProps) {
     const [activeTab, setActiveTab] = useState<SheetTabId>("atributos");
 
@@ -225,8 +238,29 @@ export function CharacterSheetView({
                             onRemoveClassAbility={onRemoveClassAbility}
                         />
                     )}
-                    {activeTab === "talentos" && <PlaceholderTab label="talentos" />}
-                    {activeTab === "magia" && <PlaceholderTab label="magia" />}
+                    {activeTab === "talentos" && (
+                        <TalentosPanel
+                            talents={sheet.talents}
+                            disabled={formDisabled}
+                            onAddTalent={onAddTalent}
+                            onUpdateTalent={onUpdateTalent}
+                            onRemoveTalent={onRemoveTalent}
+                        />
+                    )}
+                    {activeTab === "magia" && (
+                        <MagiaPanel
+                            spells={sheet.spells}
+                            specializations={sheet.arcanaSpecializations}
+                            attributes={sheet.attributes}
+                            disabled={formDisabled}
+                            onAddSpell={onAddSpell}
+                            onUpdateSpell={onUpdateSpell}
+                            onRemoveSpell={onRemoveSpell}
+                            onAddSpecialization={onAddArcanaSpecialization}
+                            onUpdateSpecialization={onUpdateArcanaSpecialization}
+                            onRemoveSpecialization={onRemoveArcanaSpecialization}
+                        />
+                    )}
                 </div>
             </div>
         </div>

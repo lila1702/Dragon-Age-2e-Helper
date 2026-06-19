@@ -15,9 +15,15 @@ import {
     createEmptyMeleeAttack,
     createEmptyRangedAttack,
 } from "../../domain/entities/habilidades";
+import { createEmptySpell, type SpellDegree } from "../../domain/entities/magias";
+import { createEmptyArcanaSpecialization } from "../../domain/entities/especializacoesArcanas";
+import { createEmptyTalent } from "../../domain/entities/talentos";
 
 import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entities/characterSheet";
 import type { ClassAbility, MeleeAttack, RangedAttack } from "../../domain/entities/habilidades";
+import type { ArcanaSpecialization } from "../../domain/entities/especializacoesArcanas";
+import type { Spell } from "../../domain/entities/magias";
+import type { Talent } from "../../domain/entities/talentos";
 import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
 import type { AttackRollOptions } from "../../domain/entities/attackRoll";
 import {
@@ -870,6 +876,114 @@ export function useCharacterSheet() {
         [updateSheet]
     );
 
+    const addTalent = useCallback(
+        () =>
+            updateSheet((prev) => ({
+                ...prev,
+                talents: [...prev.talents, createEmptyTalent()],
+            })),
+        [updateSheet]
+    );
+
+    const updateTalent = useCallback(
+        (id: string, patch: Partial<Talent>) =>
+            updateSheet((prev) => ({
+                ...prev,
+                talents: prev.talents.map((talent) =>
+                    talent.id === id
+                        ? {
+                              ...talent,
+                              ...patch,
+                              benefits: patch.benefits
+                                  ? { ...talent.benefits, ...patch.benefits }
+                                  : talent.benefits,
+                          }
+                        : talent
+                ),
+            })),
+        [updateSheet]
+    );
+
+    const removeTalent = useCallback(
+        (id: string) =>
+            updateSheet((prev) => ({
+                ...prev,
+                talents: prev.talents.filter((talent) => talent.id !== id),
+            })),
+        [updateSheet]
+    );
+
+    const addArcanaSpecialization = useCallback(
+        () =>
+            updateSheet((prev) => ({
+                ...prev,
+                arcanaSpecializations: [
+                    ...prev.arcanaSpecializations,
+                    createEmptyArcanaSpecialization(),
+                ],
+            })),
+        [updateSheet]
+    );
+
+    const updateArcanaSpecialization = useCallback(
+        (id: string, patch: Partial<ArcanaSpecialization>) =>
+            updateSheet((prev) => ({
+                ...prev,
+                arcanaSpecializations: prev.arcanaSpecializations.map((entry) =>
+                    entry.id === id
+                        ? {
+                              ...entry,
+                              ...patch,
+                              benefits: patch.benefits
+                                  ? { ...entry.benefits, ...patch.benefits }
+                                  : entry.benefits,
+                          }
+                        : entry
+                ),
+            })),
+        [updateSheet]
+    );
+
+    const removeArcanaSpecialization = useCallback(
+        (id: string) =>
+            updateSheet((prev) => ({
+                ...prev,
+                arcanaSpecializations: prev.arcanaSpecializations.filter(
+                    (entry) => entry.id !== id
+                ),
+            })),
+        [updateSheet]
+    );
+
+    const addSpell = useCallback(
+        (degree: SpellDegree = "Novato") =>
+            updateSheet((prev) => ({
+                ...prev,
+                spells: [...prev.spells, createEmptySpell(degree)],
+            })),
+        [updateSheet]
+    );
+
+    const updateSpell = useCallback(
+        (id: string, patch: Partial<Spell>) =>
+            updateSheet((prev) => ({
+                ...prev,
+                spells: prev.spells.map((spell) =>
+                    spell.id === id ? { ...spell, ...patch } : spell
+                ),
+            })),
+        [updateSheet]
+    );
+
+    const removeSpell = useCallback(
+        (id: string) =>
+            updateSheet((prev) => ({
+                ...prev,
+                spells: prev.spells.filter((spell) => spell.id !== id),
+            })),
+        [updateSheet]
+    );
+
     const canRoll = canEditSheet && (!isObrAvailable || isObrReady);
 
     return {
@@ -923,6 +1037,15 @@ export function useCharacterSheet() {
         addClassAbility,
         updateClassAbility,
         removeClassAbility,
+        addTalent,
+        updateTalent,
+        removeTalent,
+        addArcanaSpecialization,
+        updateArcanaSpecialization,
+        removeArcanaSpecialization,
+        addSpell,
+        updateSpell,
+        removeSpell,
     };
 }
 

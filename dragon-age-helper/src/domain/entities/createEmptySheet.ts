@@ -40,5 +40,7 @@ export function createEmptySheet(tokenId: string): CharacterSheet {
         mpMax: 10,
         attributes: createEmptyAttributes(),
         habilidades: createEmptyHabilidades(),
-    };
+        talents: [],
+        arcanaSpecializations: [],
+        spells: [],    };
 }
