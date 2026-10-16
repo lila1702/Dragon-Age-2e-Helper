@@ -232,6 +232,7 @@ export class OwlbearService implements IOwlbearService {
                             [METADATA_KEYS.SHEET]: JSON.parse(
                                 JSON.stringify(sheetToSave)
                             ) as CharacterSheet,
+                            [METADATA_KEYS.CHARACTER_API_ID]: sheetToSave.id,
                             [METADATA_KEYS.SCHEMA_VERSION]: SCHEMA_VERSION,
                             [METADATA_KEYS.TRACKERS]: {
                                 hp: { current: sheetToSave.hpCurrent, max: sheetToSave.hpMax },
