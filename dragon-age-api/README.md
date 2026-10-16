@@ -1,88 +1,68 @@
 # dragon-age-api
 
-API REST para persistir fichas de Dragon Age 2e em **MySQL** (Aiven).
-
-A API expõe `CharacterSheet` como **JSON** (igual ao helper Owlbear). Por baixo, o repositório **monta e desmonta** o documento em tabelas SQL relacionais.
+API REST + **Socket.IO** para persistir fichas de Dragon Age 2e em **MongoDB**, alinhada ao `CharacterSheet` da extensão Owlbear Rodeo.
 
 ## Setup local
+
+Requer MongoDB (local ou Atlas).
 
 ```bash
 cd dragon-age-api
 cp .env.example .env
-# Preencha DB_HOST, DB_PASSWORD, etc.
 npm install
-npm run migrate
-npm run migrate:backfill   # opcional: converte sheet_json legado → tabelas
 npm run dev
 ```
 
-Servidor em `http://localhost:3001`.
-
-## Esquema relacional
-
-| Tabela | Conteúdo |
-| --- | --- |
-| `characters` | Cabeçalho, combate, HP/MP, moedas, flags de habilidades |
-| `character_attributes` | 9 atributos (valor, foco ativo, bônus…) |
-| `character_focuses` | Focos por atributo |
-| `melee_attacks` / `ranged_attacks` | Ataques corpo a corpo e à distância |
-| `class_abilities` | Habilidades de classe |
-| `talents` | Talentos (benefícios Novato/Experiente/Mestre) |
-| `arcana_specializations` | Especializações arcanas |
-| `spells` | Magias por grau |
-| `inventory_items` | Itens do inventário |
-
-A coluna `sheet_json` permanece **nullable** só para migração de dados antigos; novos saves gravam nas tabelas acima.
+Servidor em `http://localhost:3001` (WebSocket na mesma porta).
 
 ## Variáveis de ambiente
 
 | Variável | Descrição |
 | --- | --- |
 | `PORT` | Porta HTTP (padrão `3001`) |
-| `DB_HOST` | Host Aiven |
-| `DB_PORT` | Porta (ex. `12555`) |
-| `DB_USER` | Usuário |
-| `DB_PASSWORD` | Senha (**nunca commitar**) |
-| `DB_NAME` | Banco (`defaultdb`) |
-| `DB_SSL_CA_PATH` | Caminho do CA PEM (padrão `./certs/aiven-ca.pem`) |
+| `MONGODB_URI` | Connection string MongoDB (dev: `mongodb://127.0.0.1:27017/dragon_age`) |
 | `CORS_ORIGINS` | Origens permitidas, separadas por vírgula |
+| `NODE_ENV` | `development` libera CORS aberto se `CORS_ORIGINS` estiver vazio |
 
-## Endpoints
+## REST
 
 | Método | Rota | Descrição |
 | --- | --- | --- |
-| `GET` | `/health` | Health check + conexão MySQL |
-| `GET` | `/characters/:id` | Buscar ficha |
+| `GET` | `/health` | Health check + ping MongoDB |
+| `GET` | `/characters/:id` | Buscar ficha (`{ id, sheet, createdAt, updatedAt }`) |
 | `POST` | `/characters` | Criar (`{ "sheet": { ... } }`, `id` opcional UUID) |
-| `PUT` | `/characters/:id` | Criar ou atualizar (`expectedUpdatedAt` opcional para conflito) |
+| `PUT` | `/characters/:id` | Criar ou atualizar (`expectedUpdatedAt` opcional → `409` em conflito) |
+| `GET` | `/rooms/:roomId/bindings` | Vínculos token ↔ ficha na mesa Owlbear |
+| `GET` | `/rooms/:roomId/tokens/:tokenId/binding` | Vínculo de um token |
+| `PUT` | `/rooms/:roomId/tokens/:tokenId/binding` | `{ "characterId": "..." }` |
 
-### Exemplo POST
+Validação na borda com **Zod** (`src/schemas/characterSheet.ts`, espelho do helper). **RN-001**: HP/MP são normalizados para `0 ≤ current ≤ max` antes de gravar.
 
-```json
-{
-  "sheet": {
-    "id": "00000000-0000-4000-8000-000000000001",
-    "name": "Nolalya",
-    "className": "Maga",
-    "level": 2,
-    "hpCurrent": 20,
-    "hpMax": 31,
-    "mpCurrent": 22,
-    "mpMax": 22,
-    "attributes": [{ "name": "Comunicação", "abbreviation": "COM", "value": 2 }],
-    "talents": [],
-    "arcanaSpecializations": [],
-    "spells": [],
-    "inventory": { "items": [], "currency": { "copper": 0, "silver": 0, "gold": 0 } }
-  }
-}
-```
+## Tempo real (Socket.IO)
 
-## Deploy (Render)
+Clientes da extensão conectam em `io(apiUrl)` e:
 
-1. Web Service apontando para `dragon-age-api`
-2. Build: `npm install && npm run build`
-3. Start: `npm run migrate && npm run migrate:backfill && npm start`
-4. Definir as variáveis `DB_*` no painel (mesmos valores do Aiven)
+| Evento (cliente → servidor) | Payload |
+| --- | --- |
+| `subscribe:character` | `{ characterId }` |
+| `unsubscribe:character` | `{ characterId }` |
+| `subscribe:room` | `{ roomId }` |
 
-**Não** commite o arquivo `.env` — ele está no `.gitignore`.
+| Evento (servidor → cliente) | Payload |
+| --- | --- |
+| `character:updated` | `{ id, sheet, createdAt, updatedAt }` após `POST`/`PUT` |
+| `room:binding` | `{ roomId, tokenId, characterId }` após `PUT` binding |
+
+Fluxo recomendado na mesa:
+
+1. Criar ou carregar ficha via REST (`POST` / `GET`).
+2. `PUT /rooms/:roomId/tokens/:tokenId/binding` com o `characterId`.
+3. Gravar `characterId` no metadata do token (`com.dragonagehelper/characterApiId`).
+4. Inscrever-se em `subscribe:character` e aplicar `character:updated` na UI.
+5. Ao editar, `PUT /characters/:id` com `expectedUpdatedAt` + salvar metadata no token.
+
+## Deploy
+
+Build: `npm install && npm run build`  
+Start: `npm start`  
+Defina `MONGODB_URI` e `CORS_ORIGINS` (URL da extensão publicada).

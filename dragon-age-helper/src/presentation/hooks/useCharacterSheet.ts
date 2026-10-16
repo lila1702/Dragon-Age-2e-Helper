@@ -8,6 +8,7 @@ import { DEV_MOCK_CHARACTER } from "../fixtures/devMockCharacter";
 import { POPOVER_HEIGHT, POPOVER_WIDTH } from "../layout/popoverLayout";
 import { useSelectedToken } from "./useSelectedToken";
 import { useOwlTrackerSync } from "./useOwlTrackerSync";
+import { useApiSheetSync } from "./useApiSheetSync";
 
 import {
     createEmptyClassAbility,
@@ -77,6 +78,20 @@ export function useCharacterSheet() {
         setCharacterSheet,
         isDirtyRef,
         isEditingResourcesRef,
+    });
+
+    useApiSheetSync({
+        isObrReady,
+        tokenId,
+        hasSheetOnToken,
+        isLoadingSheet,
+        canEditToken,
+        characterSheet,
+        setCharacterSheet,
+        isDirtyRef,
+        skipSaveRef,
+        loadedTokenIdRef,
+        pushTrackersToToken,
     });
 
     sheetSnapshotRef.current = {

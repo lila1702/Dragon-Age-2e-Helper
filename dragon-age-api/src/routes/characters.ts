@@ -7,11 +7,13 @@ import {
     insertCharacter,
     upsertCharacter,
 } from "../repositories/characterRepository.js";
+import { broadcastCharacterUpdated } from "../realtime/broadcast.js";
 import {
     characterSheetSchema,
     createCharacterBodySchema,
     updateCharacterBodySchema,
 } from "../schemas/characterSheet.js";
+import { applyResourceRules } from "../services/sheetNormalization.js";
 
 export const charactersRouter = Router();
 
@@ -38,7 +40,7 @@ charactersRouter.post("/", async (req, res) => {
     try {
         const parsed = createCharacterBodySchema.parse(req.body);
         const id = parsed.id ?? parsed.sheet.id ?? randomUUID();
-        const sheet = { ...parsed.sheet, id };
+        const sheet = applyResourceRules({ ...parsed.sheet, id });
 
         characterSheetSchema.parse(sheet);
 
@@ -49,6 +51,7 @@ charactersRouter.post("/", async (req, res) => {
         }
 
         const created = await insertCharacter(id, sheet);
+        broadcastCharacterUpdated(created);
         res.status(201).json(created);
     } catch (error) {
         if (error instanceof ZodError) {
@@ -65,7 +68,7 @@ charactersRouter.put("/:id", async (req, res) => {
     try {
         const parsed = updateCharacterBodySchema.parse(req.body);
         const id = req.params.id;
-        const sheet = { ...parsed.sheet, id };
+        const sheet = applyResourceRules({ ...parsed.sheet, id });
 
         characterSheetSchema.parse(sheet);
 
@@ -80,6 +83,7 @@ charactersRouter.put("/:id", async (req, res) => {
             return;
         }
 
+        broadcastCharacterUpdated(result);
         res.json(result);
     } catch (error) {
         if (error instanceof ZodError) {

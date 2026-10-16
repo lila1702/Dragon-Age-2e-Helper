@@ -1,17 +1,26 @@
+import { createServer } from "node:http";
+
 import { createApp } from "./app.js";
 import { config } from "./config.js";
-import { closePool } from "./db/pool.js";
+import { closeMongo, connectMongo } from "./db/mongo.js";
+import { attachRealtime } from "./realtime/socket.js";
 
 const app = createApp();
+const httpServer = createServer(app);
 
-const server = app.listen(config.port, () => {
+attachRealtime(httpServer);
+
+await connectMongo();
+
+httpServer.listen(config.port, () => {
     console.log(`dragon-age-api listening on http://localhost:${config.port}`);
+    console.log("WebSocket (Socket.IO) enabled on the same port.");
 });
 
 async function shutdown(signal: string) {
     console.log(`Received ${signal}, shutting down...`);
-    server.close();
-    await closePool();
+    httpServer.close();
+    await closeMongo();
     process.exit(0);
 }
 
