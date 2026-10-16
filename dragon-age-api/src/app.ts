@@ -4,6 +4,7 @@ import express from "express";
 import { config, corsOriginPolicy } from "./config.js";
 import { charactersRouter } from "./routes/characters.js";
 import { healthRouter } from "./routes/health.js";
+import { referenceRouter } from "./routes/reference.js";
 import { roomsRouter } from "./routes/rooms.js";
 
 export function createApp() {
@@ -19,7 +20,7 @@ export function createApp() {
     app.get("/", (_req, res) => {
         res.json({
             name: "dragon-age-api",
-            version: "0.2.0",
+            version: "0.3.0",
             database: "mongodb",
             realtime: "socket.io",
             endpoints: [
@@ -27,6 +28,10 @@ export function createApp() {
                 "/characters/:id",
                 "/rooms/:roomId/bindings",
                 "/rooms/:roomId/tokens/:tokenId/binding",
+                "/reference",
+                "/reference/items",
+                "/reference/spells",
+                "/reference/items/calculate",
             ],
             socketEvents: [
                 "subscribe:character",
@@ -41,6 +46,7 @@ export function createApp() {
     app.use("/health", healthRouter);
     app.use("/characters", charactersRouter);
     app.use("/rooms", roomsRouter);
+    app.use("/reference", referenceRouter);
 
     return app;
 }

@@ -61,6 +61,37 @@ Fluxo recomendado na mesa:
 4. Inscrever-se em `subscribe:character` e aplicar `character:updated` na UI.
 5. Ao editar, `PUT /characters/:id` com `expectedUpdatedAt` + salvar metadata no token.
 
+## Tabelas de referência (`/reference`)
+
+Catálogo inicial alinhado ao helper (atributos, escolas arcanas, grupos de armas). Seed automático na coleção `reference_catalog` na primeira subida.
+
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| `GET` | `/reference` | Índice das tabelas |
+| `GET` | `/reference/items` | Itens base (`?category=`, `?weaponGroup=`, `?tag=`) |
+| `GET` | `/reference/items/:id` | Um item base (preço/dano padrão em aço comum) |
+| `GET` | `/reference/items/:id/calculate` | Preço/dano variantes (`?materialId=&qualityId=&rarityId=`) |
+| `POST` | `/reference/items/calculate` | Corpo `{ itemId, materialId?, qualityId?, rarityId? }` |
+| `GET` | `/reference/materials` | Materiais e multiplicadores vs baseline |
+| `GET` | `/reference/qualities` | Qualidade de fabricação |
+| `GET` | `/reference/rarities` | Raridade de mercado |
+| `GET` | `/reference/spells` | Magias (`?school=`, `?arcana=`, `?degree=`, `?q=`) |
+| `GET` | `/reference/spells/:id` | Detalhe de uma magia |
+| `GET` | `/reference/arcanas` | Escolas e listas de arcanas |
+| `GET` | `/reference/attributes` | 9 atributos (AST…VON) |
+| `GET` | `/reference/weapon-groups` | Grupos de armas sugeridos |
+| `GET` | `/reference/currency-rules` | 100 cobre = 1 prata, etc. |
+| `GET` | `/reference/general-stunts` | Façanhas gerais (custo PF) |
+| `GET` | `/reference/spell-degrees` | Graus de magia + rótulos UI |
+
+**Preço:** `preçoBaseCobre × material × qualidade × raridade`, retornado como `{ copper, silver, gold }` normalizado.
+
+**Dano:** partindo de `baseDamage` do item, soma bônus de material/qualidade e dados extras (ex.: lyrium `+1d6`).
+
+Exemplo — espada longa em lyrium, superior, raro:
+
+`GET /reference/items/espada-longa/calculate?materialId=lyrium&qualityId=superior&rarityId=raro`
+
 ## Deploy
 
 Build: `npm install && npm run build`  

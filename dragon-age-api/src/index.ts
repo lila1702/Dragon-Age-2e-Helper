@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { createApp } from "./app.js";
 import { config } from "./config.js";
 import { closeMongo, connectMongo } from "./db/mongo.js";
+import { ensureReferenceCatalogSeeded } from "./repositories/referenceRepository.js";
 import { attachRealtime } from "./realtime/socket.js";
 
 const app = createApp();
@@ -11,6 +12,7 @@ const httpServer = createServer(app);
 attachRealtime(httpServer);
 
 await connectMongo();
+await ensureReferenceCatalogSeeded();
 
 httpServer.listen(config.port, () => {
     console.log(`dragon-age-api listening on http://localhost:${config.port}`);
