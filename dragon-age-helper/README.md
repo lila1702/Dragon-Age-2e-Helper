@@ -12,6 +12,17 @@ npm run dev
 
 Abra `http://localhost:5173` no navegador. Fora do Owlbear, a ficha usa dados de exemplo e rolagens simuladas (3d6 aleatório).
 
+### API MongoDB (fichas em tempo real)
+
+Com o backend [`dragon-age-api`](../dragon-age-api) rodando, defina no helper:
+
+```bash
+# dragon-age-helper/.env.local
+VITE_DRAGON_AGE_API_URL=http://localhost:3001
+```
+
+Na mesa Owlbear, edições são enviadas via REST e propagadas aos demais jogadores via **Socket.IO** (`character:updated`). O vínculo token ↔ ficha usa `OBR.room.id` e o metadata `com.dragonagehelper/characterApiId`.
+
 ### Testar no Owlbear (dev server)
 
 O Owlbear Rodeo roda em **HTTPS**. O navegador **bloqueia** carregar extensões em `http://192.168.x.x:5173` ou `http://localhost:5173` (mixed content).
