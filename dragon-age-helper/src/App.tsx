@@ -301,30 +301,30 @@ function App() {
                 />
             )}
 
-            <CharacterSheetView
+        <CharacterSheetView
                 sheet={sheet}
                 isObrAvailable={local.isObrAvailable}
                 isObrReady={local.isObrReady}
-                isGM={isGM}
+            isGM={isGM}
                 tokenName={local.tokenName}
                 selectionError={local.selectionError}
-                isLoadingSheet={isLoadingSheet}
+            isLoadingSheet={isLoadingSheet}
                 needsCreateSheet={
                     session.mode === "offline"
                         ? local.needsCreateSheet
                         : !usingApi && !needsTokenLink && local.needsCreateSheet
                 }
                 canCreateSheet={session.mode === "offline" && local.canCreateSheet}
-                canEditSheet={canEditSheet}
+            canEditSheet={canEditSheet}
                 canRoll={(!local.isObrAvailable || local.isObrReady) && canEditSheet}
-                isReadOnlySheet={isReadOnlySheet}
+            isReadOnlySheet={isReadOnlySheet}
                 isCreatingSheet={local.isCreatingSheet}
                 onCreateSheet={() => void local.createSheetOnToken()}
                 onRollAttribute={local.rollAttribute}
-                onRollAttack={(attackId, attackKind, options) =>
+            onRollAttack={(attackId, attackKind, options) =>
                     void local.rollAttack(attackId, attackKind, options, sheet)
-                }
-                onRollDamage={(attackId, attackKind, options) =>
+            }
+            onRollDamage={(attackId, attackKind, options) =>
                     void local.rollDamage(attackId, attackKind, options, sheet)
                 }
                 onNameChange={(value) =>
