@@ -301,14 +301,21 @@ export class ApiClient {
     async linkCampaignOwlbearRoom(
         campaignId: string,
         obrRoomId: string
-    ): Promise<{ campaignId: string; obrRoomId: string }> {
+    ): Promise<{ campaignId: string; obrRoomId: string; rooms: string[] }> {
         return this.request("PUT", `/campaigns/${campaignId}/owlbear-room`, { obrRoomId });
     }
 
     async getCampaignOwlbearRoom(
         campaignId: string
-    ): Promise<{ campaignId: string; obrRoomId: string | null }> {
+    ): Promise<{ campaignId: string; obrRoomId: string | null; rooms: string[] }> {
         return this.request("GET", `/campaigns/${campaignId}/owlbear-room`);
+    }
+
+    async unlinkCampaignOwlbearRoom(campaignId: string, obrRoomId: string): Promise<void> {
+        await this.request(
+            "DELETE",
+            `/campaigns/${campaignId}/owlbear-room/${encodeURIComponent(obrRoomId)}`
+        );
     }
 
     async listOwlbearRoomProfiles(obrRoomId: string): Promise<OwlbearRoomProfilesResponse> {

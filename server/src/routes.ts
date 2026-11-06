@@ -36,6 +36,12 @@ import { realtimeHub } from "./realtimeHub.js";
 
 export const router = Router();
 
+/** Express 5 types route params as `string | string[]`. */
+function param(value: string | string[] | undefined): string {
+    if (Array.isArray(value)) return value[0] ?? "";
+    return value ?? "";
+}
+
 function mapCharacter(row: CharacterRow) {
     return toCharacterDto(row);
 }
@@ -167,7 +173,7 @@ router.get("/me/characters", requireAuth, async (req, res) => {
 router.get("/campaigns/:campaignId/characters", requireAuth, async (req, res) => {
     const membership = await query<{ role: string }>(
         `SELECT role FROM memberships WHERE campaign_id = $1 AND user_id = $2`,
-        [req.params.campaignId, req.user!.id]
+        [param(req.params.campaignId), req.user!.id]
     );
     if (!membership.rows[0]) {
         res.status(403).json({ error: "Sem acesso à campanha." });
@@ -177,7 +183,7 @@ router.get("/campaigns/:campaignId/characters", requireAuth, async (req, res) =>
     const includeInactive = String(req.query.includeInactive ?? "") === "1";
     const campaign = await query<{ players_see_only_own_sheets: boolean }>(
         `SELECT players_see_only_own_sheets FROM campaigns WHERE id = $1`,
-        [req.params.campaignId]
+        [param(req.params.campaignId)]
     );
     const onlyOwn =
         membership.rows[0].role === "PLAYER" &&
@@ -194,7 +200,7 @@ router.get("/campaigns/:campaignId/characters", requireAuth, async (req, res) =>
            )
          ORDER BY status ASC, name ASC`,
         [
-            req.params.campaignId,
+            param(req.params.campaignId),
             includeInactive && membership.rows[0].role === "GM",
             onlyOwn,
             req.user!.id,
@@ -204,7 +210,7 @@ router.get("/campaigns/:campaignId/characters", requireAuth, async (req, res) =>
 });
 
 router.patch("/campaigns/:campaignId/settings", requireAuth, async (req, res) => {
-    if (!(await requireCampaignGm(req.params.campaignId, req.user!.id))) {
+    if (!(await requireCampaignGm(param(req.params.campaignId), req.user!.id))) {
         res.status(403).json({ error: "Somente o mestre altera preferências." });
         return;
     }
@@ -220,7 +226,7 @@ router.patch("/campaigns/:campaignId/settings", requireAuth, async (req, res) =>
     if (body.data.playersSeeOnlyOwnSheets !== undefined) {
         await query(
             `UPDATE campaigns SET players_see_only_own_sheets = $2 WHERE id = $1`,
-            [req.params.campaignId, body.data.playersSeeOnlyOwnSheets]
+            [param(req.params.campaignId), body.data.playersSeeOnlyOwnSheets]
         );
     }
     const updated = await query<{
@@ -229,7 +235,7 @@ router.patch("/campaigns/:campaignId/settings", requireAuth, async (req, res) =>
         ruleset_id: string;
         dice_roller: string;
         players_see_only_own_sheets: boolean;
-    }>(`SELECT * FROM campaigns WHERE id = $1`, [req.params.campaignId]);
+    }>(`SELECT * FROM campaigns WHERE id = $1`, [param(req.params.campaignId)]);
     const row = updated.rows[0];
     res.json({
         id: row.id,
@@ -301,7 +307,7 @@ router.post("/characters/migrate", requireAuth, async (req, res) => {
 });
 
 router.get("/characters/:id", requireAuth, async (req, res) => {
-    const row = await canReadCharacter(req.user!, req.params.id);
+    const row = await canReadCharacter(req.user!, param(req.params.id));
     if (!row) {
         res.status(404).json({ error: "Ficha não encontrada." });
         return;
@@ -328,7 +334,7 @@ router.put("/characters/:id", requireAuth, async (req, res) => {
     }
 
     try {
-        const row = await replaceCharacter(req.user!, req.params.id, body.data.revision, sheet);
+        const row = await replaceCharacter(req.user!, param(req.params.id), body.data.revision, sheet);
         realtimeHub.broadcast(row.campaign_id, {
             type: "sheet.snapshot",
             snapshot: {
@@ -347,7 +353,7 @@ router.put("/characters/:id", requireAuth, async (req, res) => {
 
 router.post("/characters/:id/duplicate", requireAuth, async (req, res) => {
     try {
-        const row = await duplicateCharacter(req.user!, req.params.id);
+        const row = await duplicateCharacter(req.user!, param(req.params.id));
         res.status(201).json(mapCharacter(row));
     } catch (error) {
         const status = (error as { status?: number }).status ?? 500;
@@ -364,7 +370,7 @@ router.patch("/characters/:id/status", requireAuth, async (req, res) => {
         return;
     }
     try {
-        const row = await setCharacterStatus(req.user!, req.params.id, body.data.status);
+        const row = await setCharacterStatus(req.user!, param(req.params.id), body.data.status);
         res.json(mapCharacter(row));
     } catch (error) {
         const status = (error as { status?: number }).status ?? 500;
@@ -381,7 +387,7 @@ router.patch("/characters/:id/assign-player", requireAuth, async (req, res) => {
         return;
     }
     try {
-        const row = await assignCharacterPlayer(req.user!, req.params.id, body.data.userId);
+        const row = await assignCharacterPlayer(req.user!, param(req.params.id), body.data.userId);
         res.json(mapCharacter(row));
     } catch (error) {
         const status = (error as { status?: number }).status ?? 500;
@@ -398,7 +404,7 @@ router.post("/characters/:id/patches", requireAuth, async (req, res) => {
             path: z.string().min(1),
             value: z.unknown(),
         })
-        .safeParse({ ...req.body, characterId: req.params.id });
+        .safeParse({ ...req.body, characterId: param(req.params.id) });
     if (!body.success) {
         res.status(400).json({ error: "Dados inválidos." });
         return;
@@ -427,7 +433,7 @@ router.post("/characters/:id/token-links", requireAuth, async (req, res) => {
         return;
     }
 
-    const character = await canReadCharacter(req.user!, req.params.id);
+    const character = await canReadCharacter(req.user!, param(req.params.id));
     if (!character) {
         res.status(404).json({ error: "Ficha não encontrada." });
         return;
@@ -463,7 +469,7 @@ router.post("/characters/:id/token-links", requireAuth, async (req, res) => {
 });
 
 router.get("/characters/:id/token-links", requireAuth, async (req, res) => {
-    const character = await canReadCharacter(req.user!, req.params.id);
+    const character = await canReadCharacter(req.user!, param(req.params.id));
     if (!character) {
         res.status(404).json({ error: "Ficha não encontrada." });
         return;
@@ -485,14 +491,14 @@ router.get("/characters/:id/token-links", requireAuth, async (req, res) => {
 });
 
 router.delete("/characters/:id/token-links/:tokenId", requireAuth, async (req, res) => {
-    const character = await canReadCharacter(req.user!, req.params.id);
+    const character = await canReadCharacter(req.user!, param(req.params.id));
     if (!character) {
         res.status(404).json({ error: "Ficha não encontrada." });
         return;
     }
     await query(`DELETE FROM token_links WHERE character_id = $1 AND token_id = $2`, [
         character.id,
-        req.params.tokenId,
+        param(req.params.tokenId),
     ]);
     res.status(204).end();
 });
@@ -548,7 +554,7 @@ router.post("/me/owlbear-identities", requireAuth, async (req, res) => {
 });
 
 router.get("/rulesets/:id/catalog", requireAuth, async (req, res) => {
-    const rulesetId = req.params.id;
+    const rulesetId = param(req.params.id);
     const attributes = await query(
         `SELECT id, name, abbreviation, sort_order AS "sortOrder"
          FROM catalog_attributes WHERE ruleset_id = $1 ORDER BY sort_order`,
@@ -644,7 +650,7 @@ const catalogEntryBodySchema = z.object({
 });
 
 router.get("/rulesets/:id/catalog-entries", requireAuth, async (req, res) => {
-    const rulesetId = req.params.id;
+    const rulesetId = param(req.params.id);
     const kind = typeof req.query.kind === "string" ? req.query.kind : null;
     const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
 
@@ -680,7 +686,7 @@ router.post("/rulesets/:id/catalog-entries", requireAuth, async (req, res) => {
         return;
     }
 
-    const rulesetId = req.params.id;
+    const rulesetId = param(req.params.id);
     const id = randomUUID();
     const data = parsed.data;
     const result = await query<CatalogEntryRow>(
@@ -717,7 +723,7 @@ router.patch("/catalog-entries/:id", requireAuth, async (req, res) => {
         `SELECT id, ruleset_id, kind, name, summary, body,
                 class_tags, requirement_tags, requirements_text, sort_order
          FROM catalog_entries WHERE id = $1`,
-        [req.params.id]
+        [param(req.params.id)]
     );
     if (!existing.rows[0]) {
         res.status(404).json({ error: "Entrada não encontrada." });
@@ -741,7 +747,7 @@ router.patch("/catalog-entries/:id", requireAuth, async (req, res) => {
          RETURNING id, ruleset_id, kind, name, summary, body,
                    class_tags, requirement_tags, requirements_text, sort_order`,
         [
-            req.params.id,
+            param(req.params.id),
             data.kind ?? current.kind,
             data.name?.trim() ?? current.name,
             data.summary !== undefined ? data.summary.trim() : current.summary,
@@ -759,7 +765,7 @@ router.patch("/catalog-entries/:id", requireAuth, async (req, res) => {
 
 router.delete("/catalog-entries/:id", requireAuth, async (req, res) => {
     const result = await query(`DELETE FROM catalog_entries WHERE id = $1 RETURNING id`, [
-        req.params.id,
+        param(req.params.id),
     ]);
     if (!result.rows[0]) {
         res.status(404).json({ error: "Entrada não encontrada." });
@@ -776,8 +782,18 @@ async function requireCampaignGm(campaignId: string, userId: string): Promise<bo
     return membership.rows[0]?.role === "GM";
 }
 
+async function listCampaignOwlbearRooms(campaignId: string): Promise<string[]> {
+    const result = await query<{ obr_room_id: string }>(
+        `SELECT obr_room_id FROM campaign_owlbear_rooms
+         WHERE campaign_id = $1
+         ORDER BY linked_at ASC`,
+        [campaignId]
+    );
+    return result.rows.map((row) => row.obr_room_id);
+}
+
 router.post("/campaigns/:campaignId/players", requireAuth, async (req, res) => {
-    if (!(await requireCampaignGm(req.params.campaignId, req.user!.id))) {
+    if (!(await requireCampaignGm(param(req.params.campaignId), req.user!.id))) {
         res.status(403).json({ error: "Somente o mestre cria perfis de jogadoras." });
         return;
     }
@@ -796,20 +812,20 @@ router.post("/campaigns/:campaignId/players", requireAuth, async (req, res) => {
 
     const email =
         body.data.email?.toLowerCase() ??
-        `player+${randomUUID().slice(0, 8)}@${req.params.campaignId.slice(0, 8)}.local`;
+        `player+${randomUUID().slice(0, 8)}@${param(req.params.campaignId).slice(0, 8)}.local`;
 
     try {
         const user = await createUser(email, body.data.password, body.data.displayName);
         await query(
             `INSERT INTO memberships (campaign_id, user_id, role) VALUES ($1, $2, 'PLAYER')
              ON CONFLICT (campaign_id, user_id) DO UPDATE SET role = 'PLAYER'`,
-            [req.params.campaignId, user.id]
+            [param(req.params.campaignId), user.id]
         );
         const profileId = randomUUID();
         await query(
             `INSERT INTO campaign_player_profiles (id, campaign_id, user_id, display_name)
              VALUES ($1, $2, $3, $4)`,
-            [profileId, req.params.campaignId, user.id, body.data.displayName]
+            [profileId, param(req.params.campaignId), user.id, body.data.displayName]
         );
         res.status(201).json({
             id: profileId,
@@ -826,7 +842,7 @@ router.post("/campaigns/:campaignId/players", requireAuth, async (req, res) => {
 router.get("/campaigns/:campaignId/players", requireAuth, async (req, res) => {
     const membership = await query(
         `SELECT role FROM memberships WHERE campaign_id = $1 AND user_id = $2`,
-        [req.params.campaignId, req.user!.id]
+        [param(req.params.campaignId), req.user!.id]
     );
     if (!membership.rows[0]) {
         res.status(403).json({ error: "Sem acesso." });
@@ -844,7 +860,7 @@ router.get("/campaigns/:campaignId/players", requireAuth, async (req, res) => {
          JOIN users u ON u.id = p.user_id
          WHERE p.campaign_id = $1
          ORDER BY p.display_name`,
-        [req.params.campaignId]
+        [param(req.params.campaignId)]
     );
     res.json(
         result.rows.map((row) => ({
@@ -857,7 +873,7 @@ router.get("/campaigns/:campaignId/players", requireAuth, async (req, res) => {
 });
 
 router.patch("/campaigns/:campaignId/players/:profileId", requireAuth, async (req, res) => {
-    if (!(await requireCampaignGm(req.params.campaignId, req.user!.id))) {
+    if (!(await requireCampaignGm(param(req.params.campaignId), req.user!.id))) {
         res.status(403).json({ error: "Somente o mestre gerencia perfis." });
         return;
     }
@@ -876,7 +892,7 @@ router.patch("/campaigns/:campaignId/players/:profileId", requireAuth, async (re
     const profile = await query<{ id: string; user_id: string; display_name: string }>(
         `SELECT id, user_id, display_name FROM campaign_player_profiles
          WHERE id = $1 AND campaign_id = $2`,
-        [req.params.profileId, req.params.campaignId]
+        [param(req.params.profileId), param(req.params.campaignId)]
     );
     const row = profile.rows[0];
     if (!row) {
@@ -908,7 +924,7 @@ router.patch("/campaigns/:campaignId/players/:profileId", requireAuth, async (re
 });
 
 router.delete("/campaigns/:campaignId/players/:profileId", requireAuth, async (req, res) => {
-    if (!(await requireCampaignGm(req.params.campaignId, req.user!.id))) {
+    if (!(await requireCampaignGm(param(req.params.campaignId), req.user!.id))) {
         res.status(403).json({ error: "Somente o mestre remove perfis." });
         return;
     }
@@ -916,7 +932,7 @@ router.delete("/campaigns/:campaignId/players/:profileId", requireAuth, async (r
     const profile = await query<{ id: string; user_id: string }>(
         `SELECT id, user_id FROM campaign_player_profiles
          WHERE id = $1 AND campaign_id = $2`,
-        [req.params.profileId, req.params.campaignId]
+        [param(req.params.profileId), param(req.params.campaignId)]
     );
     const row = profile.rows[0];
     if (!row) {
@@ -926,14 +942,14 @@ router.delete("/campaigns/:campaignId/players/:profileId", requireAuth, async (r
 
     await query(`DELETE FROM campaign_player_profiles WHERE id = $1`, [row.id]);
     await query(`DELETE FROM memberships WHERE campaign_id = $1 AND user_id = $2`, [
-        req.params.campaignId,
+        param(req.params.campaignId),
         row.user_id,
     ]);
     res.status(204).send();
 });
 
 router.put("/campaigns/:campaignId/owlbear-room", requireAuth, async (req, res) => {
-    if (!(await requireCampaignGm(req.params.campaignId, req.user!.id))) {
+    if (!(await requireCampaignGm(param(req.params.campaignId), req.user!.id))) {
         res.status(403).json({ error: "Somente o mestre vincula a sala." });
         return;
     }
@@ -952,35 +968,50 @@ router.put("/campaigns/:campaignId/owlbear-room", requireAuth, async (req, res) 
     await query(
         `INSERT INTO campaign_owlbear_rooms (campaign_id, obr_room_id)
          VALUES ($1, $2)
-         ON CONFLICT (campaign_id)
-         DO UPDATE SET obr_room_id = EXCLUDED.obr_room_id, linked_at = NOW()`,
-        [req.params.campaignId, obrRoomId]
+         ON CONFLICT (obr_room_id)
+         DO UPDATE SET campaign_id = EXCLUDED.campaign_id, linked_at = NOW()`,
+        [param(req.params.campaignId), obrRoomId]
     );
-    res.json({ campaignId: req.params.campaignId, obrRoomId });
+    const rooms = await listCampaignOwlbearRooms(param(req.params.campaignId));
+    res.json({ campaignId: param(req.params.campaignId), obrRoomId, rooms });
 });
 
 router.get("/campaigns/:campaignId/owlbear-room", requireAuth, async (req, res) => {
     const membership = await query(
         `SELECT role FROM memberships WHERE campaign_id = $1 AND user_id = $2`,
-        [req.params.campaignId, req.user!.id]
+        [param(req.params.campaignId), req.user!.id]
     );
     if (!membership.rows[0]) {
         res.status(403).json({ error: "Sem acesso." });
         return;
     }
-    const result = await query<{ obr_room_id: string }>(
-        `SELECT obr_room_id FROM campaign_owlbear_rooms WHERE campaign_id = $1`,
-        [req.params.campaignId]
-    );
+    const rooms = await listCampaignOwlbearRooms(param(req.params.campaignId));
     res.json({
-        campaignId: req.params.campaignId,
-        obrRoomId: result.rows[0]?.obr_room_id ?? null,
+        campaignId: param(req.params.campaignId),
+        obrRoomId: rooms[0] ?? null,
+        rooms,
     });
 });
 
-/** Perfis disponíveis para login na sala (estilo Foundry). */
+router.delete("/campaigns/:campaignId/owlbear-room/:obrRoomId", requireAuth, async (req, res) => {
+    if (!(await requireCampaignGm(param(req.params.campaignId), req.user!.id))) {
+        res.status(403).json({ error: "Somente o mestre desvincula a sala." });
+        return;
+    }
+    const obrRoomId = parseOwlbearRoomId(param(req.params.obrRoomId));
+    if (!obrRoomId) {
+        res.status(400).json({ error: "ID da sala inválido." });
+        return;
+    }
+    await query(
+        `DELETE FROM campaign_owlbear_rooms WHERE campaign_id = $1 AND obr_room_id = $2`,
+        [param(req.params.campaignId), obrRoomId]
+    );
+    res.status(204).send();
+});
+
 router.get("/owlbear/rooms/:obrRoomId/profiles", async (req, res) => {
-    const obrRoomId = parseOwlbearRoomId(req.params.obrRoomId);
+    const obrRoomId = parseOwlbearRoomId(param(req.params.obrRoomId));
     const link = await query<{ campaign_id: string; name: string }>(
         `SELECT r.campaign_id, c.name
          FROM campaign_owlbear_rooms r
@@ -1048,7 +1079,7 @@ router.post("/owlbear/rooms/:obrRoomId/login", async (req, res) => {
         return;
     }
 
-    const obrRoomId = parseOwlbearRoomId(req.params.obrRoomId);
+    const obrRoomId = parseOwlbearRoomId(param(req.params.obrRoomId));
     const link = await query<{ campaign_id: string }>(
         `SELECT campaign_id FROM campaign_owlbear_rooms
          WHERE obr_room_id = $1
@@ -1101,7 +1132,7 @@ router.post("/owlbear/rooms/:obrRoomId/login", async (req, res) => {
 router.get("/campaigns/:campaignId/initiative", requireAuth, async (req, res) => {
     const membership = await query(
         `SELECT role FROM memberships WHERE campaign_id = $1 AND user_id = $2`,
-        [req.params.campaignId, req.user!.id]
+        [param(req.params.campaignId), req.user!.id]
     );
     if (!membership.rows[0]) {
         res.status(403).json({ error: "Sem acesso." });
@@ -1117,7 +1148,7 @@ router.get("/campaigns/:campaignId/initiative", requireAuth, async (req, res) =>
         sort_order: number;
     }>(
         `SELECT * FROM initiative_entries WHERE campaign_id = $1 ORDER BY sort_order, value DESC`,
-        [req.params.campaignId]
+        [param(req.params.campaignId)]
     );
     res.json(
         result.rows.map((row) => ({
@@ -1134,7 +1165,7 @@ router.get("/campaigns/:campaignId/initiative", requireAuth, async (req, res) =>
 router.put("/campaigns/:campaignId/initiative", requireAuth, async (req, res) => {
     const membership = await query<{ role: string }>(
         `SELECT role FROM memberships WHERE campaign_id = $1 AND user_id = $2`,
-        [req.params.campaignId, req.user!.id]
+        [param(req.params.campaignId), req.user!.id]
     );
     if (membership.rows[0]?.role !== "GM") {
         res.status(403).json({ error: "Somente o mestre altera a iniciativa." });
@@ -1159,7 +1190,7 @@ router.put("/campaigns/:campaignId/initiative", requireAuth, async (req, res) =>
         return;
     }
 
-    const campaignId = req.params.campaignId;
+    const campaignId = param(req.params.campaignId);
     await query(`DELETE FROM initiative_entries WHERE campaign_id = $1`, [campaignId]);
 
     const saved = [];

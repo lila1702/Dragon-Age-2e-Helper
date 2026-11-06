@@ -13,7 +13,7 @@ interface GmPanelProps {
 export function GmPanel({ campaignId, isGm }: GmPanelProps) {
     const [players, setPlayers] = useState<CampaignPlayerProfile[]>([]);
     const [obrRoomId, setObrRoomId] = useState("");
-    const [linkedRoomId, setLinkedRoomId] = useState<string | null>(null);
+    const [linkedRooms, setLinkedRooms] = useState<string[]>([]);
     const [displayName, setDisplayName] = useState("");
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
@@ -29,8 +29,7 @@ export function GmPanel({ campaignId, isGm }: GmPanelProps) {
             api.getCampaignOwlbearRoom(campaignId),
         ]);
         setPlayers(list);
-        setLinkedRoomId(room.obrRoomId);
-        if (room.obrRoomId) setObrRoomId(room.obrRoomId);
+        setLinkedRooms(room.rooms ?? (room.obrRoomId ? [room.obrRoomId] : []));
     };
 
     useEffect(() => {
@@ -51,8 +50,9 @@ export function GmPanel({ campaignId, isGm }: GmPanelProps) {
                     jogadoras entrarem pela extensão com o perfil da mesa.
                 </p>
                 <p className="hint">
-                    No campo abaixo, cole o ID da sala ou a URL completa (o ID é o trecho entre{" "}
-                    <code>/room/</code> e o nome). Também dá para vincular pelo botão na extensão.
+                    Cole o ID ou a URL da sala (trecho entre <code>/room/</code> e o nome). Pode
+                    vincular várias salas à mesma campanha (mesa oficial + teste). Também dá pela
+                    extensão.
                 </p>
 
                 <label>
@@ -76,8 +76,8 @@ export function GmPanel({ campaignId, isGm }: GmPanelProps) {
                         void api
                             .linkCampaignOwlbearRoom(campaignId, normalized)
                             .then((result) => {
-                                setObrRoomId(result.obrRoomId);
-                                setLinkedRoomId(result.obrRoomId);
+                                setObrRoomId("");
+                                setLinkedRooms(result.rooms ?? [result.obrRoomId]);
                                 setMessage(`Sala vinculada: ${result.obrRoomId}`);
                             })
                             .catch((err) =>
@@ -87,12 +87,43 @@ export function GmPanel({ campaignId, isGm }: GmPanelProps) {
                             );
                     }}
                 >
-                    Vincular campanha à sala
+                    Adicionar sala à campanha
                 </button>
-                {linkedRoomId && (
-                    <p className="hint">
-                        Vinculada a <span className="highlight">{linkedRoomId}</span>
-                    </p>
+                {linkedRooms.length > 0 ? (
+                    <ul className="gm-room-list">
+                        {linkedRooms.map((roomId) => (
+                            <li key={roomId} className="gm-room-list__item">
+                                <span className="highlight">{roomId}</span>
+                                <button
+                                    type="button"
+                                    className="secondary"
+                                    onClick={() => {
+                                        setError(null);
+                                        setMessage(null);
+                                        void api
+                                            .unlinkCampaignOwlbearRoom(campaignId, roomId)
+                                            .then(() => {
+                                                setLinkedRooms((prev) =>
+                                                    prev.filter((entry) => entry !== roomId)
+                                                );
+                                                setMessage(`Sala desvinculada: ${roomId}`);
+                                            })
+                                            .catch((err) =>
+                                                setError(
+                                                    err instanceof Error
+                                                        ? err.message
+                                                        : "Falha ao desvincular sala."
+                                                )
+                                            );
+                                    }}
+                                >
+                                    Remover
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="hint">Nenhuma sala vinculada ainda.</p>
                 )}
 
                 <details className="panel-fold panel-fold--nested" open>

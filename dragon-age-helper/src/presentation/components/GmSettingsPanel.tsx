@@ -96,9 +96,14 @@ export function GmSettingsPanel({
                                     setStatus(null);
                                     void api
                                         .linkCampaignOwlbearRoom(campaignId, OBR.room.id)
-                                        .then((result) =>
-                                            setStatus(`Sala vinculada: ${result.obrRoomId}`)
-                                        )
+                                        .then((result) => {
+                                            const count = result.rooms?.length ?? 1;
+                                            setStatus(
+                                                count > 1
+                                                    ? `Sala vinculada: ${result.obrRoomId} (${count} salas nesta campanha).`
+                                                    : `Sala vinculada: ${result.obrRoomId}`
+                                            );
+                                        })
                                         .catch((err) =>
                                             setStatus(
                                                 err instanceof Error
@@ -111,6 +116,10 @@ export function GmSettingsPanel({
                             >
                                 Vincular esta sala Owlbear à campanha
                             </button>
+                            <p className="gm-settings__hint">
+                                Pode vincular várias salas (mesa oficial + mesa de teste). Vincular
+                                aqui adiciona a sala atual sem remover as outras.
+                            </p>
                         </div>
 
                         <label className="gm-settings__check">

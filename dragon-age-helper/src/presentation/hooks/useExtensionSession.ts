@@ -88,7 +88,7 @@ export function useExtensionSession(isObrReady: boolean) {
             return;
         }
         try {
-            const list = await api.listCampaignCharacters(campaignId, { includeInactive: true });
+            const list = await api.listCampaignCharacters(campaignId);
             setCampaignCharacters(list);
         } catch {
             setCampaignCharacters([]);
@@ -102,11 +102,18 @@ export function useExtensionSession(isObrReady: boolean) {
             return;
         }
         void reloadCampaignCharacters();
-        void api
-            .getCampaignOwlbearRoom(campaignId)
-            .then((room) => setRoomLinked(Boolean(room.obrRoomId)))
-            .catch(() => setRoomLinked(false));
-    }, [campaignId, user, linkedCharacter?.id, reloadCampaignCharacters]);
+        if (isObrReady && OBR.isAvailable) {
+            void api
+                .getCampaignOwlbearRoom(campaignId)
+                .then((room) => {
+                    const rooms = room.rooms ?? (room.obrRoomId ? [room.obrRoomId] : []);
+                    setRoomLinked(rooms.includes(OBR.room.id));
+                })
+                .catch(() => setRoomLinked(false));
+        } else {
+            setRoomLinked(false);
+        }
+    }, [campaignId, isObrReady, user, linkedCharacter?.id, reloadCampaignCharacters]);
 
     const login = useCallback(async (loginId: string, password: string) => {
         const session = await api.login(loginId, password);
@@ -139,7 +146,8 @@ export function useExtensionSession(isObrReady: boolean) {
         if (role !== "GM") return;
         try {
             const current = await api.getCampaignOwlbearRoom(campaignId);
-            if (current.obrRoomId) {
+            const rooms = current.rooms ?? (current.obrRoomId ? [current.obrRoomId] : []);
+            if (rooms.includes(OBR.room.id)) {
                 setRoomLinked(true);
                 return;
             }

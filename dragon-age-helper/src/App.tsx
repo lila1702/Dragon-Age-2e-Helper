@@ -224,10 +224,12 @@ function App() {
             {needsTokenLink && local.tokenId && (
                 <TokenLinkPanel
                     tokenName={local.tokenName}
-                    characters={session.campaignCharacters.map((entry) => ({
-                        id: entry.id,
-                        name: entry.name || entry.sheet.name || "Sem nome",
-                    }))}
+                    characters={session.campaignCharacters
+                        .filter((entry) => entry.status !== "inactive")
+                        .map((entry) => ({
+                            id: entry.id,
+                            name: entry.name || entry.sheet.name || "Sem nome",
+                        }))}
                     isGm={isGM}
                     busy={linkBusy}
                     status={session.status}
