@@ -151,7 +151,10 @@ export function AttackRowsTable<T extends AttackRow>({
         if (!pendingSituationalRoll) return;
         const { attackId, kind } = pendingSituationalRoll;
         if (kind === "attack") {
-            onRollAttack(attackId, variant, { situationalModifier });
+            onRollAttack(attackId, variant, {
+                situationalModifier,
+                includeFocus: false,
+            });
         } else {
             onRollDamage(attackId, variant, { situationalModifier });
         }
@@ -294,15 +297,17 @@ export function AttackRowsTable<T extends AttackRow>({
                                             className={`habilidades-table__roll-btn${
                                                 canRoll ? "" : " habilidades-table__roll-btn--static"
                                             }`}
-                                            disabled={disabled}
+                                            disabled={!canRoll && disabled}
                                             title={
                                                 canRoll
-                                                    ? "Clique para rolar ataque (botão direito para opções)"
+                                                    ? "Clique para rolar ataque"
                                                     : attack.name || "Nome da arma"
                                             }
                                             onClick={() => {
                                                 if (!canRoll) return;
-                                                onRollAttack(attack.id, variant);
+                                                onRollAttack(attack.id, variant, {
+                                                    includeFocus: false,
+                                                });
                                             }}
                                             onContextMenu={(event) => {
                                                 event.preventDefault();
@@ -422,10 +427,13 @@ export function AttackRowsTable<T extends AttackRow>({
                                                         ? ""
                                                         : " habilidades-table__damage-roll--static"
                                                 }`}
-                                                disabled={disabled || (canRoll && !canRollDamage)}
+                                                disabled={
+                                                    (!canRoll && disabled) ||
+                                                    (canRoll && !canRollDamage)
+                                                }
                                                 title={
                                                     canRoll
-                                                        ? "Clique para rolar dano (botão direito para opções)"
+                                                        ? "Clique para rolar dano (botão direito: situacional)"
                                                         : undefined
                                                 }
                                                 onClick={() => {
@@ -433,7 +441,7 @@ export function AttackRowsTable<T extends AttackRow>({
                                                     onRollDamage(attack.id, variant);
                                                 }}
                                                 onContextMenu={(event) => {
-                                                    if (!canRoll) return;
+                                                    if (!canRoll || !canRollDamage) return;
                                                     event.preventDefault();
                                                     setPendingSituationalRoll({
                                                         attackId: attack.id,
@@ -521,54 +529,123 @@ export function AttackRowsTable<T extends AttackRow>({
                 )}
             </tbody>
 
-            {nameContextMenu && (
-                <FocusContextMenu
-                    x={nameContextMenu.x}
-                    y={nameContextMenu.y}
-                    menuRef={menuRef}
-                >
-                    <button
-                        type="button"
-                        className="focus-context-menu__item"
-                        role="menuitem"
-                        onClick={() => {
-                            setEditingNameId(nameContextMenu.id);
-                            setNameContextMenu(null);
-                        }}
+            {nameContextMenu && (() => {
+                const menuAttack = attacks.find((entry) => entry.id === nameContextMenu.id);
+                const menuHasFocus = Boolean(
+                    menuAttack &&
+                        hasWeaponFocus(
+                            attributes,
+                            menuAttack.attributeAbbreviation,
+                            menuAttack.weaponGroup ?? ""
+                        )
+                );
+                const menuCanRollDamage = Boolean(
+                    menuAttack &&
+                        buildDamageRollNotation(
+                            computeDamageWithAttribute(menuAttack.damage, {
+                                attributes,
+                                attackAttributeAbbreviation: menuAttack.attributeAbbreviation,
+                                damageAttributeAbbreviation:
+                                    menuAttack.damageAttributeAbbreviation,
+                                lutUsesWillpowerForDamage,
+                            })
+                        )
+                );
+
+                return (
+                    <FocusContextMenu
+                        x={nameContextMenu.x}
+                        y={nameContextMenu.y}
+                        menuRef={menuRef}
                     >
-                        Editar nome
-                    </button>
-                    {canRoll && (
-                        <button
-                            type="button"
-                            className="focus-context-menu__item"
-                            role="menuitem"
-                            onClick={() => {
-                                setPendingSituationalRoll({
-                                    attackId: nameContextMenu.id,
-                                    kind: "attack",
-                                });
-                                setNameContextMenu(null);
-                            }}
-                        >
-                            Rolagem Situacional…
-                        </button>
-                    )}
-                    {!disabled && (
-                        <button
-                            type="button"
-                            className="focus-context-menu__item focus-context-menu__item--danger"
-                            role="menuitem"
-                            onClick={() => {
-                                onRemove(nameContextMenu.id);
-                                setNameContextMenu(null);
-                            }}
-                        >
-                            Excluir
-                        </button>
-                    )}
-                </FocusContextMenu>
-            )}
+                        {canRoll && (
+                            <button
+                                type="button"
+                                className="focus-context-menu__item"
+                                role="menuitem"
+                                onClick={() => {
+                                    onRollAttack(nameContextMenu.id, variant, {
+                                        includeFocus: false,
+                                    });
+                                    setNameContextMenu(null);
+                                }}
+                            >
+                                Rolar ataque
+                            </button>
+                        )}
+                        {canRoll && menuHasFocus && (
+                            <button
+                                type="button"
+                                className="focus-context-menu__item"
+                                role="menuitem"
+                                onClick={() => {
+                                    onRollAttack(nameContextMenu.id, variant, {
+                                        includeFocus: true,
+                                    });
+                                    setNameContextMenu(null);
+                                }}
+                            >
+                                Jogar Com Foco
+                            </button>
+                        )}
+                        {canRoll && menuCanRollDamage && (
+                            <button
+                                type="button"
+                                className="focus-context-menu__item"
+                                role="menuitem"
+                                onClick={() => {
+                                    onRollDamage(nameContextMenu.id, variant);
+                                    setNameContextMenu(null);
+                                }}
+                            >
+                                Rolar dano
+                            </button>
+                        )}
+                        {canRoll && (
+                            <button
+                                type="button"
+                                className="focus-context-menu__item"
+                                role="menuitem"
+                                onClick={() => {
+                                    setPendingSituationalRoll({
+                                        attackId: nameContextMenu.id,
+                                        kind: "attack",
+                                    });
+                                    setNameContextMenu(null);
+                                }}
+                            >
+                                Rolagem Situacional…
+                            </button>
+                        )}
+                        {!disabled && (
+                            <button
+                                type="button"
+                                className="focus-context-menu__item"
+                                role="menuitem"
+                                onClick={() => {
+                                    setEditingNameId(nameContextMenu.id);
+                                    setNameContextMenu(null);
+                                }}
+                            >
+                                Editar nome
+                            </button>
+                        )}
+                        {!disabled && (
+                            <button
+                                type="button"
+                                className="focus-context-menu__item focus-context-menu__item--danger"
+                                role="menuitem"
+                                onClick={() => {
+                                    onRemove(nameContextMenu.id);
+                                    setNameContextMenu(null);
+                                }}
+                            >
+                                Excluir
+                            </button>
+                        )}
+                    </FocusContextMenu>
+                );
+            })()}
 
             <RollSituationalModal
                 open={pendingSituationalRoll !== null}

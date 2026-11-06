@@ -318,8 +318,6 @@ export function useCharacterSheet() {
             return;
         }
 
-        if (!canEditSheet) return;
-
         if (isRollingRef.current) {
             void showOwlbearNotification("Aguarde a rolagem anterior terminar.", "INFO");
             return;
@@ -355,34 +353,44 @@ export function useCharacterSheet() {
         async (
             attackId: string,
             attackKind: "melee" | "ranged",
-            options?: AttackRollOptions
+            options?: AttackRollOptions,
+            sourceSheet?: CharacterSheet
         ) => {
             const canRollNow = !isObrAvailable || isObrReady;
             if (!canRollNow) {
                 void showOwlbearNotification("Owlbear ainda não está pronto para rolagens.", "WARNING");
                 return;
             }
-            if (!canEditSheet) return;
             if (isRollingRef.current) {
                 void showOwlbearNotification("Aguarde a rolagem anterior terminar.", "INFO");
                 return;
             }
 
-            const habilidades = characterSheet.habilidades ?? createEmptyHabilidades();
+            const activeSheet = sourceSheet ?? characterSheet;
+            const habilidades = activeSheet.habilidades ?? createEmptyHabilidades();
             const attack =
                 attackKind === "melee"
                     ? habilidades.meleeAttacks.find((entry) => entry.id === attackId)
                     : habilidades.rangedAttacks.find((entry) => entry.id === attackId);
-            if (!attack) return;
+            if (!attack) {
+                void showOwlbearNotification("Ataque não encontrado na ficha.", "WARNING");
+                return;
+            }
 
+            const includeFocus = options?.includeFocus === true;
             const untrained = isAttackUntrained(attack.weaponGroup, habilidades.weaponGroups);
             const attackBonus = computeAttackBonus(
-                characterSheet.attributes,
+                activeSheet.attributes,
                 attack.attributeAbbreviation,
                 untrained,
-                attack.weaponGroup
+                attack.weaponGroup,
+                includeFocus
             );
-            const rollLabel = `${attack.name || "Ataque"} (${attack.attributeAbbreviation || "—"})`;
+            const focusLabel =
+                includeFocus && attack.weaponGroup?.trim()
+                    ? ` · foco ${attack.weaponGroup.trim()}`
+                    : "";
+            const rollLabel = `${attack.name || "Ataque"} (${attack.attributeAbbreviation || "—"})${focusLabel}`;
 
             isRollingRef.current = true;
             try {
@@ -397,36 +405,40 @@ export function useCharacterSheet() {
                 isRollingRef.current = false;
             }
         },
-        [canEditSheet, characterSheet, isObrAvailable, isObrReady]
+        [characterSheet, isObrAvailable, isObrReady]
     );
 
     const rollDamage = useCallback(
         async (
             attackId: string,
             attackKind: "melee" | "ranged",
-            options?: AttackRollOptions
+            options?: AttackRollOptions,
+            sourceSheet?: CharacterSheet
         ) => {
             const canRollNow = !isObrAvailable || isObrReady;
             if (!canRollNow) {
                 void showOwlbearNotification("Owlbear ainda não está pronto para rolagens.", "WARNING");
                 return;
             }
-            if (!canEditSheet) return;
             if (isRollingRef.current) {
                 void showOwlbearNotification("Aguarde a rolagem anterior terminar.", "INFO");
                 return;
             }
 
-            const habilidades = characterSheet.habilidades ?? createEmptyHabilidades();
+            const activeSheet = sourceSheet ?? characterSheet;
+            const habilidades = activeSheet.habilidades ?? createEmptyHabilidades();
             const attack =
                 attackKind === "melee"
                     ? habilidades.meleeAttacks.find((entry) => entry.id === attackId)
                     : habilidades.rangedAttacks.find((entry) => entry.id === attackId);
-            if (!attack) return;
+            if (!attack) {
+                void showOwlbearNotification("Ataque não encontrado na ficha.", "WARNING");
+                return;
+            }
 
             const untrained = isAttackUntrained(attack.weaponGroup, habilidades.weaponGroups);
             const damageOptions = {
-                attributes: characterSheet.attributes,
+                attributes: activeSheet.attributes,
                 attackAttributeAbbreviation: attack.attributeAbbreviation,
                 damageAttributeAbbreviation: attack.damageAttributeAbbreviation,
                 lutUsesWillpowerForDamage: habilidades.lutUsesWillpowerForDamage,
@@ -462,7 +474,7 @@ export function useCharacterSheet() {
                 isRollingRef.current = false;
             }
         },
-        [canEditSheet, characterSheet, isObrAvailable, isObrReady]
+        [characterSheet, isObrAvailable, isObrReady]
     );
 
     const updateSheet = useCallback(

@@ -316,16 +316,16 @@ function App() {
                 }
                 canCreateSheet={session.mode === "offline" && local.canCreateSheet}
                 canEditSheet={canEditSheet}
-                canRoll={local.canRoll || (usingApi && canEditSheet)}
+                canRoll={(!local.isObrAvailable || local.isObrReady) && canEditSheet}
                 isReadOnlySheet={isReadOnlySheet}
                 isCreatingSheet={local.isCreatingSheet}
                 onCreateSheet={() => void local.createSheetOnToken()}
                 onRollAttribute={local.rollAttribute}
                 onRollAttack={(attackId, attackKind, options) =>
-                    void local.rollAttack(attackId, attackKind, options)
+                    void local.rollAttack(attackId, attackKind, options, sheet)
                 }
                 onRollDamage={(attackId, attackKind, options) =>
-                    void local.rollDamage(attackId, attackKind, options)
+                    void local.rollDamage(attackId, attackKind, options, sheet)
                 }
                 onNameChange={(value) =>
                     usingApi ? synced.setField("name", value) : local.setName(value)
