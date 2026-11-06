@@ -97,6 +97,7 @@ export function halveDamageTotal(total: number): number {
 
 export interface AttackRollOptions {
     situationalModifier?: number;
+    includeFocus?: boolean;
 }
 
 export interface DamageRollResult {

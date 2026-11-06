@@ -1,0 +1,319 @@
+.mode-gate {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 100%;
+    padding: 1.25rem 1rem 1.5rem;
+    background: var(--da-white);
+    color: var(--da-black);
+    box-sizing: border-box;
+}
+
+.mode-gate__title {
+    margin: 0;
+    font-family: var(--font-sheet);
+    font-size: 1.35rem;
+    letter-spacing: 0.02em;
+}
+
+.mode-gate__lead {
+    margin: 0;
+    color: var(--da-muted);
+    font-size: 0.92rem;
+    line-height: 1.4;
+}
+
+.mode-gate__actions,
+.mode-gate__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-top: 0.35rem;
+}
+
+.mode-gate__form label {
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.mode-gate__form input,
+.mode-gate__form select,
+.session-chrome select,
+.token-link-panel select {
+    width: 100%;
+    padding: 0.45rem 0.55rem;
+    border: 1px solid var(--da-black);
+    border-radius: 0;
+    background: var(--da-white);
+    font: inherit;
+    box-sizing: border-box;
+}
+
+.mode-gate__btn {
+    display: block;
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--da-black);
+    background: var(--da-white);
+    color: var(--da-black);
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.mode-gate__btn--primary {
+    background: var(--da-black);
+    color: var(--da-white);
+}
+
+.mode-gate__btn--link {
+    background: var(--da-cell-bg);
+}
+
+.mode-gate__btn:hover {
+    border-color: var(--da-red);
+}
+
+.mode-gate__btn--primary:hover {
+    background: var(--da-red);
+    border-color: var(--da-red);
+}
+
+.mode-gate__hint {
+    margin: -0.15rem 0 0.45rem;
+    font-size: 0.75rem;
+    color: var(--da-muted);
+    line-height: 1.35;
+}
+
+.mode-gate__back {
+    align-self: start;
+    border: none;
+    background: transparent;
+    color: var(--da-muted);
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+}
+
+.mode-gate__error {
+    color: var(--da-red-dark);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.session-chrome {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--da-black);
+    background: var(--da-cell-bg);
+}
+
+.session-chrome--offline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.session-chrome__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.session-chrome__who {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.session-chrome__who span {
+    font-size: 0.75rem;
+    color: var(--da-muted);
+}
+
+.session-chrome__campaign {
+    display: grid;
+    gap: 0.2rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.session-chrome__status {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--da-red-dark);
+    font-weight: 700;
+}
+
+.token-link-panel {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-bottom: 2px solid var(--da-red);
+    background: color-mix(in srgb, var(--da-red) 6%, var(--da-white));
+}
+
+.token-link-panel__title {
+    font-family: var(--font-sheet);
+    font-size: 0.95rem;
+}
+
+.token-link-panel__text {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: var(--da-muted);
+}
+
+.token-link-panel__row {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.token-link-panel__status {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--da-red-dark);
+}
+
+.gm-settings {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+.gm-settings__gear {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid var(--da-black);
+    background: var(--da-white);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.gm-settings__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0.55rem;
+    background: color-mix(in srgb, var(--da-black) 35%, transparent);
+    box-sizing: border-box;
+}
+
+.gm-settings__panel {
+    display: grid;
+    gap: 0.65rem;
+    align-content: start;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    overflow: auto;
+    padding: 0.75rem;
+    border: 1px solid var(--da-black);
+    background: var(--da-white);
+    box-shadow: 0 0.45rem 1.25rem rgb(0 0 0 / 22%);
+}
+
+.gm-settings__panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.gm-settings__panel-head strong {
+    display: block;
+    font-family: var(--font-sheet, Georgia, serif);
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+}
+
+.gm-settings__close {
+    flex: 0 0 auto;
+    width: auto;
+    padding: 0.3rem 0.55rem;
+}
+
+.gm-settings__hint {
+    margin: 0.2rem 0 0;
+    font-size: 0.75rem;
+    color: var(--da-muted);
+    line-height: 1.35;
+}
+
+.gm-settings__actions {
+    display: grid;
+    gap: 0.4rem;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.gm-settings__actions .mode-gate__btn,
+.gm-settings__actions .token-bar__btn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+}
+
+.gm-settings__check {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.gm-settings__assign {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.gm-settings__assign-grid {
+    display: grid;
+    gap: 0.4rem;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.gm-settings__assign-row {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.4rem;
+    border: 1px solid var(--da-black);
+    background: var(--da-cell-bg);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.gm-settings__assign-name {
+    overflow-wrap: anywhere;
+}
+
+.gm-settings__assign-row select {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 0.3rem 0.4rem;
+    border: 1px solid var(--da-black);
+    background: var(--da-white);
+    font: inherit;
+}
+
+.gm-settings__status {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--da-red-dark);
+}

@@ -1,8 +1,8 @@
-import type { Attribute } from "../../domain/entities/characterSheet";
-import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
-import type { AttackRollOptions, DamageRollResult } from "../../domain/entities/attackRoll";
-import type { StuntRollResult } from "../../domain/entities/diceRules";
-import type { CharacterSheet } from "../../domain/entities/characterSheet";
+import type { Attribute } from "@dragon-age/domain";
+import type { AttributeRollOptions } from "@dragon-age/domain";
+import type { AttackRollOptions, DamageRollResult } from "@dragon-age/domain";
+import type { StuntRollResult } from "@dragon-age/domain";
+import type { CharacterSheet } from "@dragon-age/domain";
 import type { SelectionError } from "./selectionErrors";
 
 export interface SelectionResult {

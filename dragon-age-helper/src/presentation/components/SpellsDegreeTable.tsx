@@ -1,13 +1,9 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 
-import { FocusContextMenu } from "./FocusContextMenu";
+import { useCatalog } from "@dragon-age/client";
+import type { Spell } from "@dragon-age/domain";
 
-import {
-    ARCANA_SCHOOLS,
-    getArcanasForSchool,
-    isArcanaSchool,
-    type Spell,
-} from "../../domain/entities/magias";
+import { FocusContextMenu } from "./FocusContextMenu";
 
 interface NameContextMenu {
     id: string;
@@ -32,6 +28,8 @@ export function SpellsDegreeTable({
     onUpdateSpell,
     onRemoveSpell,
 }: SpellsDegreeTableProps) {
+    const catalog = useCatalog();
+    const schoolNames = catalog.schools.map((school) => school.name);
     const [expandedDescriptionId, setExpandedDescriptionId] = useState<string | null>(null);
     const [editingNameId, setEditingNameId] = useState<string | null>(null);
     const [nameContextMenu, setNameContextMenu] = useState<NameContextMenu | null>(null);
@@ -92,8 +90,13 @@ export function SpellsDegreeTable({
                             spells.map((spell) => {
                                 const schoolListId = `spell-school-${spell.id}`;
                                 const arcanaListId = `spell-arcana-${spell.id}`;
-                                const arcanaSuggestions = isArcanaSchool(spell.school)
-                                    ? getArcanasForSchool(spell.school)
+                                const school = catalog.schools.find(
+                                    (entry) => entry.name === spell.school
+                                );
+                                const arcanaSuggestions = school
+                                    ? catalog.arcanas
+                                          .filter((arcana) => arcana.schoolId === school.id)
+                                          .map((arcana) => arcana.name)
                                     : [];
                                 const isDescriptionOpen = expandedDescriptionId === spell.id;
                                 const isEditingName = editingNameId === spell.id;
@@ -187,7 +190,7 @@ export function SpellsDegreeTable({
                                                     }
                                                 />
                                                 <datalist id={schoolListId}>
-                                                    {ARCANA_SCHOOLS.map((school) => (
+                                                    {schoolNames.map((school) => (
                                                         <option key={school} value={school} />
                                                     ))}
                                                 </datalist>

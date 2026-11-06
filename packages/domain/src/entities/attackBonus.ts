@@ -79,14 +79,18 @@ export function computeAttackBonus(
     attributes: Attribute[],
     attributeAbbreviation: string,
     untrained: boolean,
-    weaponGroup?: string
+    weaponGroup?: string,
+    includeFocus = true
 ): number | null {
     const base = getAttributeValue(attributes, attributeAbbreviation);
     if (base === null) return null;
 
     let total = untrained ? base - UNTRAINED_ATTACK_PENALTY : base;
 
-    if (hasWeaponFocus(attributes, attributeAbbreviation, weaponGroup ?? "")) {
+    if (
+        includeFocus &&
+        hasWeaponFocus(attributes, attributeAbbreviation, weaponGroup ?? "")
+    ) {
         const attribute = attributes.find(
             (entry) =>
                 entry.abbreviation.toUpperCase() ===

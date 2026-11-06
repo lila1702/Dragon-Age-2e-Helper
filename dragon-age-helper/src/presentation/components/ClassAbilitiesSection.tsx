@@ -1,4 +1,4 @@
-import type { ClassAbility } from "../../domain/entities/habilidades";
+import type { ClassAbility } from "@dragon-age/domain";
 
 interface ClassAbilitiesSectionProps {
     classAbilities: ClassAbility[];

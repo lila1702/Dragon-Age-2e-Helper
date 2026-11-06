@@ -1,6 +1,6 @@
-import { resolveFocusBonus } from "../../domain/entities/attributeRoll";
+import { resolveFocusBonus } from "@dragon-age/domain";
 
-import type { Attribute } from "../../domain/entities/characterSheet";
+import type { Attribute } from "@dragon-age/domain";
 
 export interface AttributeRowProps {
     attribute: Attribute;

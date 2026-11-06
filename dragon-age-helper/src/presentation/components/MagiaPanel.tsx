@@ -4,9 +4,9 @@ import {
     computeSpellpower,
     type Spell,
     type SpellDegree,
-} from "../../domain/entities/magias";
+} from "@dragon-age/domain";
 
-import type { Attribute } from "../../domain/entities/characterSheet";
+import type { Attribute } from "@dragon-age/domain";
 
 import { SpellsDegreeTable } from "./SpellsDegreeTable";
 

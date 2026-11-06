@@ -1,13 +1,10 @@
 import { useMemo } from "react";
 
+import { useCatalogWeaponGroups } from "@dragon-age/client";
+import { parseWeaponGroups } from "@dragon-age/domain";
+import type { AttackRollOptions, Attribute, Habilidades, MeleeAttack, RangedAttack } from "@dragon-age/domain";
+
 import { AttackRowsTable } from "./AttackRowsTable";
-
-import { parseWeaponGroups } from "../../domain/entities/attackBonus";
-import { WEAPON_GROUP_SUGGESTIONS } from "../../domain/entities/weaponGroupDefinitions";
-
-import type { AttackRollOptions } from "../../domain/entities/attackRoll";
-import type { Attribute } from "../../domain/entities/characterSheet";
-import type { Habilidades, MeleeAttack, RangedAttack } from "../../domain/entities/habilidades";
 
 interface AttacksSectionProps {
     habilidades: Habilidades;
@@ -38,7 +35,10 @@ interface AttacksSectionProps {
     ) => void;
 }
 
-function buildWeaponGroupOptions(habilidades: Habilidades): string[] {
+function buildWeaponGroupOptions(
+    habilidades: Habilidades,
+    catalogGroups: string[]
+): string[] {
     const fromCharacter = parseWeaponGroups(habilidades.weaponGroups);
     const fromAttacks = [
         ...habilidades.meleeAttacks,
@@ -47,7 +47,7 @@ function buildWeaponGroupOptions(habilidades: Habilidades): string[] {
         .map((attack) => attack.weaponGroup?.trim())
         .filter((group): group is string => Boolean(group));
 
-    return [...new Set([...fromCharacter, ...fromAttacks, ...WEAPON_GROUP_SUGGESTIONS])];
+    return [...new Set([...fromCharacter, ...fromAttacks, ...catalogGroups])];
 }
 
 export function AttacksSection({
@@ -70,9 +70,10 @@ export function AttacksSection({
     onRollAttack,
     onRollDamage,
 }: AttacksSectionProps) {
+    const catalogWeaponGroups = useCatalogWeaponGroups();
     const weaponGroupOptions = useMemo(
-        () => buildWeaponGroupOptions(habilidades),
-        [habilidades]
+        () => buildWeaponGroupOptions(habilidades, catalogWeaponGroups),
+        [habilidades, catalogWeaponGroups]
     );
 
     return (
@@ -117,10 +118,10 @@ export function AttacksSection({
                             <th scope="col" className="habilidades-table__drag-head" aria-label="Reordenar" />
                             <th scope="col">Nome</th>
                             <th scope="col">Atrib.</th>
-                            <th scope="col" title="Exceção ao padrão PRE→PER, LUT→FOR">
+                            <th scope="col" title="Exceção ao padrão PRE?PER, LUT?FOR">
                                 Dano
                             </th>
-                            <th scope="col" title="Comparado com Grupos de Armas do personagem; fora da lista = −2 ataque e metade do dano">
+                            <th scope="col" title="Comparado com Grupos de Armas do personagem; fora da lista = -2 ataque e metade do dano">
                                 Grupo
                             </th>
                             <th scope="col">Ataque</th>
@@ -184,10 +185,10 @@ export function AttacksSection({
                             <th scope="col" className="habilidades-table__drag-head" aria-label="Reordenar" />
                             <th scope="col">Nome</th>
                             <th scope="col">Atrib.</th>
-                            <th scope="col" title="Exceção ao padrão PRE→PER, LUT→FOR">
+                            <th scope="col" title="Exceção ao padrão PRE?PER, LUT?FOR">
                                 Dano
                             </th>
-                            <th scope="col" title="Comparado com Grupos de Armas do personagem; fora da lista = −2 ataque e metade do dano">
+                            <th scope="col" title="Comparado com Grupos de Armas do personagem; fora da lista = -2 ataque e metade do dano">
                                 Grupo
                             </th>
                             <th scope="col">Ataque</th>

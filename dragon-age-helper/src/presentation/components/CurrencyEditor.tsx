@@ -1,10 +1,10 @@
 import { useLayoutEffect, useRef, useState } from "react";
 
-import type { Currency } from "../../domain/entities/inventario";
+import type { Currency } from "@dragon-age/domain";
 import {
     parseNumericExpression,
     sanitizeRelativeNumericInput,
-} from "../../domain/entities/numericExpression";
+} from "@dragon-age/domain";
 
 type CurrencyField = keyof Currency;
 

@@ -8,7 +8,7 @@ import {
     tokenResourcesMatch,
 } from "../../infrastructure/owlbear/owlTrackersSync";
 
-import type { CharacterSheet } from "../../domain/entities/characterSheet";
+import type { CharacterSheet } from "@dragon-age/domain";
 
 const TRACKER_SYNC_DEBOUNCE_MS = 300;
 const OUTBOUND_ECHO_GUARD_MS = 800;

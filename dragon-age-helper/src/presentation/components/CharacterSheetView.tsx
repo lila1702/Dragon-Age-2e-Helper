@@ -10,19 +10,20 @@ import { TalentosPanel } from "./TalentosPanel";
 import { TokenSelectionBar } from "./TokenSelectionBar";
 import type { SheetTabId } from "./SheetTabs";
 
-import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entities/characterSheet";
-import type { ClassAbility, MeleeAttack, RangedAttack } from "../../domain/entities/habilidades";
-import type { Spell, SpellDegree } from "../../domain/entities/magias";
-import type { Talent } from "../../domain/entities/talentos";
-import type { Currency, InventoryItem } from "../../domain/entities/inventario";
-import type { ArcanaSpecialization } from "../../domain/entities/especializacoesArcanas";
-import type { AttackRollOptions } from "../../domain/entities/attackRoll";
-import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
+import type { CharacterSheet, Attribute, CombatStats } from "@dragon-age/domain";
+import type { ClassAbility, MeleeAttack, RangedAttack } from "@dragon-age/domain";
+import type { Spell, SpellDegree } from "@dragon-age/domain";
+import type { Talent } from "@dragon-age/domain";
+import type { Currency, InventoryItem } from "@dragon-age/domain";
+import type { ArcanaSpecialization } from "@dragon-age/domain";
+import type { AttackRollOptions } from "@dragon-age/domain";
+import type { AttributeRollOptions } from "@dragon-age/domain";
 
 import "../styles/sheet.css";
 
 export interface CharacterSheetViewProps {
     sheet: CharacterSheet;
+    layout?: "popover" | "widescreen";
     isObrAvailable: boolean;
     isObrReady: boolean;
     tokenName: string | null;
@@ -92,11 +93,13 @@ export interface CharacterSheetViewProps {
     onAddInventoryItem: () => void;
     onUpdateInventoryItem: (id: string, patch: Partial<InventoryItem>) => void;
     onRemoveInventoryItem: (id: string) => void;
+    onReorderInventoryItem: (fromIndex: number, toIndex: number) => void;
     onUpdateCurrency: (patch: Partial<Currency>) => void;
 }
 
 export function CharacterSheetView({
     sheet,
+    layout = "popover",
     isObrAvailable,
     tokenName,
     selectionError,
@@ -157,6 +160,7 @@ export function CharacterSheetView({
     onAddInventoryItem,
     onUpdateInventoryItem,
     onRemoveInventoryItem,
+    onReorderInventoryItem,
     onUpdateCurrency,
 }: CharacterSheetViewProps) {
     const [activeTab, setActiveTab] = useState<SheetTabId>("atributos");
@@ -165,7 +169,9 @@ export function CharacterSheetView({
     const formDisabled = !canEditSheet;
 
     return (
-        <div className="character-sheet">
+        <div
+            className={`character-sheet${layout === "widescreen" ? " character-sheet--widescreen" : ""}`}
+        >
             <div className="character-sheet__card">
                 <TokenSelectionBar
                     isObrAvailable={isObrAvailable}
@@ -209,6 +215,7 @@ export function CharacterSheetView({
                                 <AttributeStripRow
                                     key={attribute.abbreviation}
                                     attribute={attribute}
+                                    level={sheet.level}
                                     onRoll={onRollAttribute}
                                     onAddFocus={onAddFocus}
                                     onRemoveFocus={onRemoveFocus}
@@ -217,7 +224,9 @@ export function CharacterSheetView({
                                     onFocusBonusChange={onFocusBonusChange}
                                     onAttributeValueChange={onAttributeValueChange}
                                     onPrimaryChange={onPrimaryChange}
-                                    disabled={rollsDisabled}
+                                    disabled={formDisabled}
+                                    canRoll={!rollsDisabled}
+                                    preferEdit={layout === "widescreen"}
                                 />
                             ))}
                         </div>
@@ -279,6 +288,7 @@ export function CharacterSheetView({
                             onAddItem={onAddInventoryItem}
                             onUpdateItem={onUpdateInventoryItem}
                             onRemoveItem={onRemoveInventoryItem}
+                            onReorderItem={onReorderInventoryItem}
                             onUpdateCurrency={onUpdateCurrency}
                         />
                     )}

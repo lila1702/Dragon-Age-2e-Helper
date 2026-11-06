@@ -22,11 +22,7 @@ export function TokenSelectionBar({
     onCreateSheet,
 }: TokenSelectionBarProps) {
     if (!isObrAvailable) {
-        return (
-            <div className="token-bar token-bar--dev" role="status">
-                Modo desenvolvimento — ficha de exemplo (não salva no mapa).
-            </div>
-        );
+        return null;
     }
 
     if (isLoading) {

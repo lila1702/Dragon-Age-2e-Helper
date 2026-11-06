@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "verbatimModuleSyntax": true,
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@extension/*": ["../dragon-age-helper/src/*"],
+      "@dragon-age/domain": ["../packages/domain/src/index.ts"],
+      "@dragon-age/client": ["../packages/client/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}
