@@ -8,9 +8,12 @@ export type InitiativeApi = {
     ): Promise<InitiativeEntry[]>;
 };
 
-/** InitiativeBoard backed by the shared REST API. */
 export class ApiInitiativeBoard implements InitiativeBoard {
-    constructor(private readonly api: InitiativeApi) {}
+    private readonly api: InitiativeApi;
+
+    constructor(api: InitiativeApi) {
+        this.api = api;
+    }
 
     list(campaignId: string): Promise<InitiativeEntry[]> {
         return this.api.listInitiative(campaignId);

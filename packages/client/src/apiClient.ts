@@ -18,13 +18,14 @@ import type {
 } from "./types";
 
 export class ApiError extends Error {
-    constructor(
-        message: string,
-        readonly status: number,
-        readonly body?: unknown
-    ) {
+    readonly status: number;
+    readonly body?: unknown;
+
+    constructor(message: string, status: number, body?: unknown) {
         super(message);
         this.name = "ApiError";
+        this.status = status;
+        this.body = body;
     }
 }
 
@@ -35,7 +36,11 @@ export interface ApiClientOptions {
 }
 
 export class ApiClient {
-    constructor(private readonly options: ApiClientOptions) {}
+    private readonly options: ApiClientOptions;
+
+    constructor(options: ApiClientOptions) {
+        this.options = options;
+    }
 
     async register(email: string, password: string, displayName: string): Promise<SessionResponse> {
         return this.request<SessionResponse>("POST", "/users", {

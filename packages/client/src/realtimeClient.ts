@@ -7,11 +7,16 @@ export class RealtimeClient {
     private readonly handlers = new Set<RealtimeHandler>();
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     private intentionalClose = false;
+    private readonly getUrl: () => string | null;
+    private readonly onConnectionChange?: (connected: boolean) => void;
 
     constructor(
-        private readonly getUrl: () => string | null,
-        private readonly onConnectionChange?: (connected: boolean) => void
-    ) {}
+        getUrl: () => string | null,
+        onConnectionChange?: (connected: boolean) => void
+    ) {
+        this.getUrl = getUrl;
+        this.onConnectionChange = onConnectionChange;
+    }
 
     connect(): void {
         this.intentionalClose = false;
