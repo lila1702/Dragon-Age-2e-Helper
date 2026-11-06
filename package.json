@@ -1,5 +1,20 @@
 {
-  "dependencies": {
-    "@owlbear-rodeo/sdk": "^3.1.0"
+  "name": "dragon-age-2e-helper",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "dragon-age-helper",
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev:extension": "npm run dev -w dragon-age-helper",
+    "dev:web": "npm run dev -w web",
+    "dev:server": "npm run dev -w server",
+    "build:extension": "npm run build -w dragon-age-helper",
+    "build:web": "npm run build -w web",
+    "build:server": "npm run build -w server",
+    "migrate": "npm run migrate -w server",
+    "typecheck": "npm run typecheck -w @dragon-age/domain && npm run typecheck -w @dragon-age/client"
   }
 }

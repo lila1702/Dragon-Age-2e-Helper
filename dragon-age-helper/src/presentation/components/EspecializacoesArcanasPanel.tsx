@@ -3,7 +3,7 @@ import { AutoResizeTextarea } from "./AutoResizeTextarea";
 import {
     SPECIALIZATION_DEGREES,
     type ArcanaSpecialization,
-} from "../../domain/entities/especializacoesArcanas";
+} from "@dragon-age/domain";
 
 interface EspecializacoesArcanasPanelProps {
     specializations: ArcanaSpecialization[];

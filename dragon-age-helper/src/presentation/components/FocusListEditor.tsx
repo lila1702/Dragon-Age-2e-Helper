@@ -165,7 +165,7 @@ export function FocusListEditor({
                                     }}
                                     onDragEnd={handleDragEnd}
                                 >
-                                    ⋮⋮
+                                    {"\u22EE\u22EE"}
                                 </span>
                                 <button
                                     type="button"

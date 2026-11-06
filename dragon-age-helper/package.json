@@ -13,6 +13,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dragon-age/client": "*",
+    "@dragon-age/domain": "*",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "@owlbear-rodeo/sdk": "^3.1.0"

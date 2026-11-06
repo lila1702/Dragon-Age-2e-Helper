@@ -3,7 +3,7 @@
     --da-white: #ffffff;
     --da-red: #8b1a2b;
     --da-red-dark: #6b1220;
-    --da-red-untrained: #b86b76;
+    --da-red-untrained: #8b4550;
     --da-mana: #1e3a8a;
     --da-cell-bg: #e8e8e8;
     --da-tab-inactive: #c4c4c4;
@@ -31,11 +31,16 @@
     box-sizing: border-box;
 }
 
+html,
 body {
     margin: 0;
-    min-height: 100svh;
+    min-height: 100%;
     background: var(--da-white);
     color: var(--da-black);
+}
+
+body {
+    min-height: 100svh;
 }
 
 #root {
@@ -43,6 +48,8 @@ body {
     max-width: var(--popover-width);
     min-height: var(--popover-height);
     margin: 0 auto;
+    background: var(--da-white);
+    color: var(--da-black);
 }
 
 h1,

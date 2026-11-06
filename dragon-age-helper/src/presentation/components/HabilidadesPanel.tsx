@@ -1,15 +1,15 @@
 import { AttacksSection } from "./AttacksSection";
 import { ClassAbilitiesSection } from "./ClassAbilitiesSection";
 
-import type { AttackRollOptions } from "../../domain/entities/attackRoll";
-import type { Attribute } from "../../domain/entities/characterSheet";
+import type { AttackRollOptions } from "@dragon-age/domain";
+import type { Attribute } from "@dragon-age/domain";
 import type {
     ClassAbility,
     Habilidades,
     MeleeAttack,
     RangedAttack,
-} from "../../domain/entities/habilidades";
-import { createEmptyHabilidades } from "../../domain/entities/habilidades";
+} from "@dragon-age/domain";
+import { createEmptyHabilidades } from "@dragon-age/domain";
 
 interface HabilidadesPanelProps {
     habilidades?: Habilidades;

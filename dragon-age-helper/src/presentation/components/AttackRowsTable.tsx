@@ -3,7 +3,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { FocusContextMenu } from "./FocusContextMenu";
 import { RollSituationalModal } from "./RollSituationalModal";
 
-import { ATTRIBUTE_DEFINITIONS } from "../../domain/entities/attributeDefinitions";
+import { ATTRIBUTE_DEFINITIONS } from "@dragon-age/domain";
 import {
     computeAttackBonus,
     computeDamageWithAttribute,
@@ -12,14 +12,14 @@ import {
     hasWeaponFocus,
     isAttackUntrained,
     resolveDamageAttributeAbbreviation,
-} from "../../domain/entities/attackBonus";
-import { buildDamageRollNotation } from "../../domain/entities/attackRoll";
-import { resolveFocusBonus } from "../../domain/entities/attributeRoll";
-import { RELOAD_ACTION_OPTIONS } from "../../domain/entities/weaponReload";
+} from "@dragon-age/domain";
+import { buildDamageRollNotation } from "@dragon-age/domain";
+import { resolveFocusBonus } from "@dragon-age/domain";
+import { RELOAD_ACTION_OPTIONS } from "@dragon-age/domain";
 
-import type { AttackRollOptions } from "../../domain/entities/attackRoll";
-import type { Attribute } from "../../domain/entities/characterSheet";
-import type { MeleeAttack, RangedAttack } from "../../domain/entities/habilidades";
+import type { AttackRollOptions } from "@dragon-age/domain";
+import type { Attribute } from "@dragon-age/domain";
+import type { MeleeAttack, RangedAttack } from "@dragon-age/domain";
 
 type AttackRow = MeleeAttack | RangedAttack;
 type AttackKind = "melee" | "ranged";
@@ -66,7 +66,7 @@ function buildAttackTitle(
     const parts: string[] = [];
 
     if (untrained) {
-        parts.push("Sem treinamento no grupo (−2 ataque, metade do dano)");
+        parts.push("Sem treinamento no grupo (-2 ataque, metade do dano)");
     }
 
     if (hasWeaponFocus(attributes, attackAttributeAbbreviation, weaponGroup ?? "")) {
@@ -256,7 +256,7 @@ export function AttackRowsTable<T extends AttackRow>({
                                                 setDropIndex(null);
                                             }}
                                         >
-                                            ⋮⋮
+                                            {"\u22EE\u22EE"}
                                         </span>
                                     )}
                                 </td>
@@ -291,14 +291,19 @@ export function AttackRowsTable<T extends AttackRow>({
                                     ) : (
                                         <button
                                             type="button"
-                                            className="habilidades-table__roll-btn"
-                                            disabled={disabled || !canRoll}
+                                            className={`habilidades-table__roll-btn${
+                                                canRoll ? "" : " habilidades-table__roll-btn--static"
+                                            }`}
+                                            disabled={disabled}
                                             title={
                                                 canRoll
                                                     ? "Clique para rolar ataque (botão direito para opções)"
-                                                    : attack.name || "Nome da arma"
+                                                    : "Botão direito para editar/excluir"
                                             }
-                                            onClick={() => onRollAttack(attack.id, variant)}
+                                            onClick={() => {
+                                                if (!canRoll) return;
+                                                onRollAttack(attack.id, variant);
+                                            }}
                                             onContextMenu={(event) => {
                                                 event.preventDefault();
                                                 setNameContextMenu({
@@ -342,7 +347,7 @@ export function AttackRowsTable<T extends AttackRow>({
                                         value={attack.damageAttributeAbbreviation ?? ""}
                                         disabled={disabled}
                                         aria-label="Atributo somado ao dano"
-                                        title="Padrão: Precisão→Percepção, Luta→Força (ou Vontade no modo Guerreira Arcana)"
+                                        title="Padrão: Precisão?Percepção, Luta?Força (ou Vontade no modo Guerreira Arcana)"
                                         onChange={(event) =>
                                             onUpdate(attack.id, {
                                                 damageAttributeAbbreviation: event.target.value,
@@ -412,14 +417,21 @@ export function AttackRowsTable<T extends AttackRow>({
                                         {displayDamage && (
                                             <button
                                                 type="button"
-                                                className="habilidades-table__damage-roll"
-                                                disabled={disabled || !canRoll || !canRollDamage}
+                                                className={`habilidades-table__damage-roll${
+                                                    canRoll
+                                                        ? ""
+                                                        : " habilidades-table__damage-roll--static"
+                                                }`}
+                                                disabled={disabled || (canRoll && !canRollDamage)}
                                                 title={
                                                     canRoll
                                                         ? "Clique para rolar dano (botão direito para opções)"
                                                         : undefined
                                                 }
-                                                onClick={() => onRollDamage(attack.id, variant)}
+                                                onClick={() => {
+                                                    if (!canRoll) return;
+                                                    onRollDamage(attack.id, variant);
+                                                }}
                                                 onContextMenu={(event) => {
                                                     if (!canRoll) return;
                                                     event.preventDefault();
@@ -429,7 +441,7 @@ export function AttackRowsTable<T extends AttackRow>({
                                                     });
                                                 }}
                                             >
-                                                → {displayDamage}
+                                                {"\u2192"} {displayDamage}
                                             </button>
                                         )}
                                     </div>

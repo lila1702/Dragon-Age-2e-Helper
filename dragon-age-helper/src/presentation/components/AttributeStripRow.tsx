@@ -5,11 +5,12 @@ import { FocusBonusInput } from "./FocusBonusInput";
 import { FocusListEditor } from "./FocusListEditor";
 import { RollSituationalModal } from "./RollSituationalModal";
 
-import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
-import type { Attribute } from "../../domain/entities/characterSheet";
+import type { AttributeRollOptions } from "@dragon-age/domain";
+import type { Attribute } from "@dragon-age/domain";
 
 export interface AttributeStripRowProps {
     attribute: Attribute;
+    level: number;
     onRoll: (attribute: Attribute, options?: AttributeRollOptions) => void;
     onAddFocus: (abbreviation: string, focusName: string) => void;
     onRemoveFocus: (abbreviation: string, focusName: string) => void;
@@ -18,7 +19,11 @@ export interface AttributeStripRowProps {
     onFocusBonusChange: (abbreviation: string, bonus: number) => void;
     onAttributeValueChange: (abbreviation: string, value: number) => void;
     onPrimaryChange: (abbreviation: string, isPrimary: boolean) => void;
+    /** Bloqueia edição de valor/focos/primário. */
     disabled?: boolean;
+    canRoll?: boolean;
+    /** true na web: clique edita o valor em vez de rolar. */
+    preferEdit?: boolean;
 }
 
 interface PendingSituationalRoll {
@@ -33,6 +38,7 @@ function buildRollLabel(attribute: Attribute, focusName?: string): string {
 
 export function AttributeStripRow({
     attribute,
+    level,
     onRoll,
     onAddFocus,
     onRemoveFocus,
@@ -42,12 +48,15 @@ export function AttributeStripRow({
     onAttributeValueChange,
     onPrimaryChange,
     disabled = false,
+    canRoll = true,
+    preferEdit = false,
 }: AttributeStripRowProps) {
     const focusNames = attribute.focusNames ?? [];
     const [pendingSituationalRoll, setPendingSituationalRoll] =
         useState<PendingSituationalRoll | null>(null);
 
     const openSituationalRoll = (focusName?: string) => {
+        if (!canRoll) return;
         setPendingSituationalRoll({ focusName });
     };
 
@@ -68,6 +77,7 @@ export function AttributeStripRow({
                             type="checkbox"
                             className="attribute-strip__primary-check"
                             checked={attribute.isPrimary ?? false}
+                            disabled={disabled}
                             aria-label={`${attribute.name} é atributo primário`}
                             onChange={(e) =>
                                 onPrimaryChange(attribute.abbreviation, e.target.checked)
@@ -82,9 +92,13 @@ export function AttributeStripRow({
                         <AttributeValueInput
                             attribute={attribute}
                             disabled={disabled}
+                            preferEdit={preferEdit}
+                            canRoll={canRoll}
                             onValueChange={onAttributeValueChange}
                             onRoll={(attr) => onRoll(attr)}
-                            onOpenSituationalRoll={() => openSituationalRoll()}
+                            onOpenSituationalRoll={
+                                canRoll ? () => openSituationalRoll() : undefined
+                            }
                         />
                     </div>
                 </div>
@@ -94,6 +108,8 @@ export function AttributeStripRow({
                     <div className="sheet-field__body sheet-field__body--foco-mod">
                         <FocusBonusInput
                             attribute={attribute}
+                            level={level}
+                            disabled={disabled}
                             onFocusBonusChange={onFocusBonusChange}
                         />
                     </div>
@@ -106,7 +122,11 @@ export function AttributeStripRow({
                             focusNames={focusNames}
                             disabled={disabled}
                             onRollFocus={(name) => onRoll(attribute, { focusName: name })}
-                            onOpenSituationalRoll={(name) => openSituationalRoll(name)}
+                            onOpenSituationalRoll={
+                                canRoll
+                                    ? (name) => openSituationalRoll(name)
+                                    : undefined
+                            }
                             onAddFocus={(name) => onAddFocus(attribute.abbreviation, name)}
                             onRemoveFocus={(name) => onRemoveFocus(attribute.abbreviation, name)}
                             onRenameFocus={(oldName, newName) =>

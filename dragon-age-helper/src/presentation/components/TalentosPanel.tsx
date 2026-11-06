@@ -1,9 +1,9 @@
 import {
     TALENT_DEGREES,
     type Talent,
-} from "../../domain/entities/talentos";
+} from "@dragon-age/domain";
 
-import type { ArcanaSpecialization } from "../../domain/entities/especializacoesArcanas";
+import type { ArcanaSpecialization } from "@dragon-age/domain";
 
 import { EspecializacoesArcanasPanel } from "./EspecializacoesArcanasPanel";
 import { AutoResizeTextarea } from "./AutoResizeTextarea";

@@ -1,4 +1,4 @@
-import type { CharacterSheet } from "../../domain/entities/characterSheet";
+import type { CharacterSheet } from "@dragon-age/domain";
 
 export const DEV_MOCK_CHARACTER: CharacterSheet = {
     id: "sheet_dev_mock",

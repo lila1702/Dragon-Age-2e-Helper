@@ -1,4 +1,5 @@
 import { parseNameAndAttribute } from "./attackBonus";
+import { DEFAULT_FOCUS_BONUS, MAX_FOCUS_BONUS } from "./attributeRoll";
 import { normalizeReloadAction } from "./weaponReload";
 import { ATTRIBUTE_DEFINITIONS } from "./attributeDefinitions";
 import { createEmptyHabilidades, createHabilidadeId } from "./habilidades";
@@ -66,9 +67,8 @@ function parseMeleeAttacks(raw: unknown): MeleeAttack[] {
     for (const entry of raw) {
         if (!isRecord(entry)) continue;
 
+        // Mantém rascunhos vazios (nome "") para o botão "Adicionar" funcionar.
         const rawName = typeof entry.name === "string" ? entry.name.trim() : "";
-        if (!rawName) continue;
-
         const parsedAttribute = parseAttributeAbbreviation(entry.attributeAbbreviation);
         const fromName = parseNameAndAttribute(rawName);
 
@@ -94,7 +94,6 @@ function parseRangedAttacks(raw: unknown): RangedAttack[] {
         if (!isRecord(entry)) continue;
 
         const rawName = typeof entry.name === "string" ? entry.name.trim() : "";
-        if (!rawName) continue;
 
         const parsedAttribute = parseAttributeAbbreviation(entry.attributeAbbreviation);
         const fromName = parseNameAndAttribute(rawName);
@@ -125,7 +124,6 @@ function parseClassAbilities(raw: unknown): ClassAbility[] {
     for (const entry of raw) {
         if (!isRecord(entry)) continue;
         const name = typeof entry.name === "string" ? entry.name.trim() : "";
-        if (!name) continue;
 
         abilities.push({
             id: parseId(entry.id),
@@ -261,10 +259,6 @@ function parseTalents(raw: unknown): Talent[] {
 
         const name = typeof entry.name === "string" ? entry.name.trim() : "";
         const benefits = parseTalentBenefits(entry);
-        const hasContent =
-            name.length > 0 || TALENT_DEGREES.some((degree) => benefits[degree].trim().length > 0);
-
-        if (!hasContent) continue;
 
         const parsed: Talent = {
             id: parseId(entry.id),
@@ -347,11 +341,6 @@ function parseArcanaSpecializations(raw: unknown): ArcanaSpecialization[] {
 
         const name = typeof entry.name === "string" ? entry.name.trim() : "";
         const benefits = parseSpecializationBenefits(entry);
-        const hasContent =
-            name.length > 0 ||
-            TALENT_DEGREES.some((degree) => benefits[degree].trim().length > 0);
-
-        if (!hasContent) continue;
 
         const parsed: ArcanaSpecialization = {
             id: parseId(entry.id),
@@ -414,7 +403,6 @@ function parseSpells(raw: unknown): Spell[] {
             if (!isRecord(entry)) return null;
 
             const name = typeof entry.name === "string" ? entry.name.trim() : "";
-            if (!name) return null;
 
             const cost =
                 typeof entry.cost === "number" && Number.isFinite(entry.cost) ? entry.cost : 0;
@@ -469,7 +457,10 @@ function mergeAttributes(raw: unknown): Attribute[] {
             isPrimary: saved?.isPrimary === true,
             focusBonus:
                 typeof saved?.focusBonus === "number" && Number.isFinite(saved.focusBonus)
-                    ? saved.focusBonus
+                    ? Math.min(
+                          MAX_FOCUS_BONUS,
+                          Math.max(DEFAULT_FOCUS_BONUS, Math.round(saved.focusBonus))
+                      )
                     : undefined,
             focusNames: Array.isArray(saved?.focusNames)
                 ? saved.focusNames.filter((n): n is string => typeof n === "string")
@@ -514,7 +505,6 @@ function parseInventoryItems(raw: unknown): InventoryItem[] {
             if (!isRecord(entry)) return null;
 
             const name = typeof entry.name === "string" ? entry.name.trim() : "";
-            if (!name) return null;
 
             const saleValue = typeof entry.saleValue === "string" ? entry.saleValue : "";
             const description = typeof entry.description === "string" ? entry.description : "";

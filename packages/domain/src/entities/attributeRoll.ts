@@ -1,6 +1,10 @@
 import type { Attribute } from "./characterSheet";
 
 export const DEFAULT_FOCUS_BONUS = 2;
+/** Máximo RAW (nível 11+: até duas melhorias de +1 no mesmo atributo). */
+export const MAX_FOCUS_BONUS = 4;
+/** Nível a partir do qual focos podem ser melhorados (+1 por escolha). */
+export const FOCUS_IMPROVEMENT_LEVEL = 11;
 
 export interface AttributeRollOptions {
     focusName?: string;
@@ -14,7 +18,24 @@ export interface AttributeRollBreakdown {
 }
 
 export function resolveFocusBonus(attribute: Attribute): number {
-    return attribute.focusBonus ?? DEFAULT_FOCUS_BONUS;
+    const raw = attribute.focusBonus ?? DEFAULT_FOCUS_BONUS;
+    return Math.min(MAX_FOCUS_BONUS, Math.max(DEFAULT_FOCUS_BONUS, raw));
+}
+
+export function canImproveFocusBonus(level: number, attribute: Attribute): boolean {
+    return level >= FOCUS_IMPROVEMENT_LEVEL && resolveFocusBonus(attribute) < MAX_FOCUS_BONUS;
+}
+
+export function canReduceFocusBonus(level: number, attribute: Attribute): boolean {
+    return level >= FOCUS_IMPROVEMENT_LEVEL && resolveFocusBonus(attribute) > DEFAULT_FOCUS_BONUS;
+}
+
+export function nextFocusBonus(attribute: Attribute): number {
+    return Math.min(MAX_FOCUS_BONUS, resolveFocusBonus(attribute) + 1);
+}
+
+export function previousFocusBonus(attribute: Attribute): number {
+    return Math.max(DEFAULT_FOCUS_BONUS, resolveFocusBonus(attribute) - 1);
 }
 
 export function parseSituationalModifiers(input: string): number {

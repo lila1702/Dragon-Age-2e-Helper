@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import OBR from "@owlbear-rodeo/sdk";
 
-import { createEmptySheet } from "../../domain/entities/createEmptySheet";
+import { createEmptySheet } from "@dragon-age/domain";
 import { owlbearService } from "../../infrastructure/owlbear/OwlbearService";
 import { showOwlbearNotification, showRollNotification, showDamageRollNotification } from "../../infrastructure/owlbear/rollNotification";
 import { DEV_MOCK_CHARACTER } from "../fixtures/devMockCharacter";
@@ -14,26 +14,26 @@ import {
     createEmptyHabilidades,
     createEmptyMeleeAttack,
     createEmptyRangedAttack,
-} from "../../domain/entities/habilidades";
-import { createEmptyInventoryItem, normalizeCurrency } from "../../domain/entities/inventario";
-import { createEmptySpell, type SpellDegree } from "../../domain/entities/magias";
-import { createEmptyArcanaSpecialization } from "../../domain/entities/especializacoesArcanas";
-import { createEmptyTalent } from "../../domain/entities/talentos";
+} from "@dragon-age/domain";
+import { createEmptyInventoryItem, normalizeCurrency } from "@dragon-age/domain";
+import { createEmptySpell, type SpellDegree } from "@dragon-age/domain";
+import { createEmptyArcanaSpecialization } from "@dragon-age/domain";
+import { createEmptyTalent } from "@dragon-age/domain";
 
-import type { CharacterSheet, Attribute, CombatStats } from "../../domain/entities/characterSheet";
-import type { ClassAbility, MeleeAttack, RangedAttack } from "../../domain/entities/habilidades";
-import type { ArcanaSpecialization } from "../../domain/entities/especializacoesArcanas";
-import type { Currency, InventoryItem } from "../../domain/entities/inventario";
-import type { Spell } from "../../domain/entities/magias";
-import type { Talent } from "../../domain/entities/talentos";
-import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
-import type { AttackRollOptions } from "../../domain/entities/attackRoll";
+import type { CharacterSheet, Attribute, CombatStats } from "@dragon-age/domain";
+import type { ClassAbility, MeleeAttack, RangedAttack } from "@dragon-age/domain";
+import type { ArcanaSpecialization } from "@dragon-age/domain";
+import type { Currency, InventoryItem } from "@dragon-age/domain";
+import type { Spell } from "@dragon-age/domain";
+import type { Talent } from "@dragon-age/domain";
+import type { AttributeRollOptions } from "@dragon-age/domain";
+import type { AttackRollOptions } from "@dragon-age/domain";
 import {
     computeAttackBonus,
     computeDamageWithAttribute,
     isAttackUntrained,
-} from "../../domain/entities/attackBonus";
-import { buildDamageRollNotation } from "../../domain/entities/attackRoll";
+} from "@dragon-age/domain";
+import { buildDamageRollNotation } from "@dragon-age/domain";
 
 const SAVE_DEBOUNCE_MS = 600;
 
@@ -1024,6 +1024,24 @@ export function useCharacterSheet() {
         [updateSheet]
     );
 
+    const reorderInventoryItem = useCallback(
+        (fromIndex: number, toIndex: number) =>
+            updateSheet((prev) => {
+                const items = [...prev.inventory.items];
+                const [moved] = items.splice(fromIndex, 1);
+                if (!moved) return prev;
+                items.splice(toIndex, 0, moved);
+                return {
+                    ...prev,
+                    inventory: {
+                        ...prev.inventory,
+                        items,
+                    },
+                };
+            }),
+        [updateSheet]
+    );
+
     const updateCurrency = useCallback(
         (patch: Partial<Currency>) =>
             updateSheet((prev) => ({
@@ -1104,6 +1122,7 @@ export function useCharacterSheet() {
         addInventoryItem,
         updateInventoryItem,
         removeInventoryItem,
+        reorderInventoryItem,
         updateCurrency,
     };
 }

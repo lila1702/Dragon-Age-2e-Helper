@@ -466,14 +466,18 @@
     justify-content: center;
     width: 100%;
     min-height: 100%;
+    padding: 0.2rem 0.1rem;
 }
 
 .focus-bonus-input__cluster {
+    position: relative;
     display: grid;
-    grid-template-columns: 0.75rem 2rem;
+    grid-template-columns: 0.7rem minmax(1.1rem, auto);
     align-items: center;
     justify-items: center;
-    width: 2.75rem;
+    width: auto;
+    min-width: 2.2rem;
+    padding: 0.15rem 0.2rem 0.35rem;
 }
 
 .focus-bonus-input__prefix {
@@ -484,25 +488,50 @@
     line-height: 1;
 }
 
-.focus-bonus-input__field {
+.focus-bonus-input__value {
     width: 100%;
-    border: none;
-    background: transparent;
     font-size: var(--sheet-text-md);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     text-align: center;
     color: var(--da-red);
-    padding: 0;
-    -moz-appearance: textfield;
-    appearance: textfield;
+    line-height: 1;
 }
 
-.focus-bonus-input__field::-webkit-outer-spin-button,
-.focus-bonus-input__field::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    appearance: none;
-    margin: 0;
+.focus-bonus-input__badge {
+    position: absolute;
+    z-index: 1;
+    width: 0.95rem;
+    height: 0.95rem;
+    padding: 0;
+    border: 1px solid var(--da-black);
+    border-radius: 999px;
+    background: var(--da-white);
+    color: var(--da-black);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px var(--da-white);
+}
+
+.focus-bonus-input__badge--plus {
+    left: -0.1rem;
+    bottom: -0.05rem;
+}
+
+.focus-bonus-input__badge--minus {
+    right: -0.1rem;
+    bottom: -0.05rem;
+}
+
+.focus-bonus-input__badge:hover {
+    background: var(--da-red);
+    border-color: var(--da-red);
+    color: var(--da-white);
 }
 
 .sheet-field__body--focos-list {
@@ -643,9 +672,9 @@
 
 .focus-list__focus-label {
     display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    line-height: 1.25;
 }
 
 .focus-list__focus-btn:hover:not(:disabled) {
@@ -1150,12 +1179,20 @@
     box-sizing: border-box;
 }
 
-.habilidades-table__roll-btn:hover:not(:disabled) {
+.habilidades-table__roll-btn--static {
+    cursor: context-menu;
+    opacity: 1;
+    color: var(--da-black);
+}
+
+.habilidades-table__roll-btn:hover:not(:disabled):not(.habilidades-table__roll-btn--static) {
     background: color-mix(in srgb, var(--da-red) 6%, var(--da-white));
 }
 
 .habilidades-table__roll-btn:disabled {
     cursor: default;
+    opacity: 1;
+    color: inherit;
 }
 
 .habilidades-table__placeholder {
@@ -1182,6 +1219,17 @@
     cursor: pointer;
     font-variant-numeric: tabular-nums;
     line-height: 1.2;
+}
+
+.habilidades-table__damage-roll--static {
+    cursor: default;
+    opacity: 1;
+}
+
+.habilidades-table__damage-roll:disabled {
+    opacity: 1;
+    cursor: default;
+    color: inherit;
 }
 
 .habilidades-table__row--untrained .habilidades-table__input--damage-base {
@@ -2009,8 +2057,12 @@
     table-layout: fixed;
 }
 
+.inventario-table__col-drag {
+    width: 1.35rem;
+}
+
 .inventario-table__col-item {
-    width: 22%;
+    width: 20%;
 }
 
 .inventario-table__col-qty {
@@ -2025,6 +2077,42 @@
     width: 0.85rem;
 }
 
+.inventario-table__drag-head {
+    padding: 0 !important;
+}
+
+.inventario-table__drag-cell {
+    text-align: center;
+    vertical-align: middle;
+    padding: 0.15rem 0 !important;
+}
+
+.inventario-table__drag-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.2rem;
+    height: 1.45rem;
+    cursor: grab;
+    color: var(--da-muted);
+    font-size: 0.68rem;
+    letter-spacing: -0.08em;
+    user-select: none;
+    line-height: 1;
+}
+
+.inventario-table__drag-handle:active {
+    cursor: grabbing;
+}
+
+.inventario-table__row--dragging {
+    opacity: 0.55;
+}
+
+.inventario-table__row--drop-target td {
+    box-shadow: inset 0 2px 0 var(--da-red);
+}
+
 .inventario-table thead th {
     padding: 0.35rem 0.45rem;
     background: var(--da-cell-bg);
@@ -2034,8 +2122,8 @@
     text-align: left;
 }
 
-.inventario-table thead th:nth-child(3),
-.inventario-table thead th:nth-child(4) {
+.inventario-table thead th:nth-child(4),
+.inventario-table thead th:nth-child(5) {
     padding-left: 0.25rem;
     padding-right: 0.25rem;
     text-align: center;
@@ -2052,8 +2140,8 @@
     vertical-align: top;
 }
 
-.inventario-table tbody td:nth-child(3),
-.inventario-table tbody td:nth-child(4) {
+.inventario-table tbody td:nth-child(4),
+.inventario-table tbody td:nth-child(5) {
     padding: 0.2rem 0.15rem;
 }
 

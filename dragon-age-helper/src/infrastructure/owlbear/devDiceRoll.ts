@@ -2,7 +2,7 @@ import type { GenericDiceRollResult } from "./owlbear-dice";
 import {
     halveDamageTotal,
     parseHalvedDiceNotation,
-} from "../../domain/entities/attackRoll";
+} from "@dragon-age/domain";
 
 const DAMAGE_NOTATION = /^(\d+)d(\d+)([+-]\d+)?$/i;
 

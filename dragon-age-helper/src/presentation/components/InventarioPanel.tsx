@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import type { Currency, InventoryItem } from "../../domain/entities/inventario";
+import type { Currency, InventoryItem } from "@dragon-age/domain";
 import { CurrencyEditor } from "./CurrencyEditor";
 import { FocusContextMenu } from "./FocusContextMenu";
 
@@ -17,6 +17,7 @@ interface InventarioPanelProps {
     onAddItem: () => void;
     onUpdateItem: (id: string, patch: Partial<InventoryItem>) => void;
     onRemoveItem: (id: string) => void;
+    onReorderItem: (fromIndex: number, toIndex: number) => void;
     onUpdateCurrency: (patch: Partial<Currency>) => void;
 }
 
@@ -27,9 +28,12 @@ export function InventarioPanel({
     onAddItem,
     onUpdateItem,
     onRemoveItem,
+    onReorderItem,
     onUpdateCurrency,
 }: InventarioPanelProps) {
     const [itemContextMenu, setItemContextMenu] = useState<ItemContextMenu | null>(null);
+    const [dragIndex, setDragIndex] = useState<number | null>(null);
+    const [dropIndex, setDropIndex] = useState<number | null>(null);
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -52,6 +56,33 @@ export function InventarioPanel({
         };
     }, [itemContextMenu]);
 
+    const handleDragStart = (index: number) => {
+        if (disabled) return;
+        setDragIndex(index);
+    };
+
+    const handleDragOver = (event: React.DragEvent, index: number) => {
+        event.preventDefault();
+        if (dragIndex === null || dragIndex === index) return;
+        setDropIndex(index);
+    };
+
+    const handleDrop = (index: number) => {
+        if (dragIndex === null || dragIndex === index) {
+            setDragIndex(null);
+            setDropIndex(null);
+            return;
+        }
+        onReorderItem(dragIndex, index);
+        setDragIndex(null);
+        setDropIndex(null);
+    };
+
+    const handleDragEnd = () => {
+        setDragIndex(null);
+        setDropIndex(null);
+    };
+
     return (
         <div className="inventario-panel" aria-label="Inventário">
             <section className="inventario-section" aria-label="Equipamento">
@@ -60,6 +91,7 @@ export function InventarioPanel({
                 <div className="inventario-table-wrap">
                     <table className="inventario-table">
                         <colgroup>
+                            <col className="inventario-table__col-drag" />
                             <col className="inventario-table__col-item" />
                             <col className="inventario-table__col-description" />
                             <col className="inventario-table__col-qty" />
@@ -68,6 +100,7 @@ export function InventarioPanel({
                         </colgroup>
                         <thead>
                             <tr>
+                                <th scope="col" className="inventario-table__drag-head" aria-label="Reordenar" />
                                 <th scope="col">Item</th>
                                 <th scope="col">Descrição</th>
                                 <th scope="col">Qtd</th>
@@ -84,11 +117,42 @@ export function InventarioPanel({
                         <tbody>
                             {items.length === 0 ? (
                                 <tr className="inventario-table__empty-row">
-                                    <td colSpan={5}>Nenhum item cadastrado.</td>
+                                    <td colSpan={6}>Nenhum item cadastrado.</td>
                                 </tr>
                             ) : (
-                                items.map((item) => (
-                                    <tr key={item.id} className="inventario-table__row">
+                                items.map((item, index) => (
+                                    <tr
+                                        key={item.id}
+                                        className={`inventario-table__row${
+                                            dragIndex === index
+                                                ? " inventario-table__row--dragging"
+                                                : ""
+                                        }${
+                                            dropIndex === index
+                                                ? " inventario-table__row--drop-target"
+                                                : ""
+                                        }`}
+                                        onDragOver={(event) => handleDragOver(event, index)}
+                                        onDrop={() => handleDrop(index)}
+                                        onDragEnd={handleDragEnd}
+                                    >
+                                        <td className="inventario-table__drag-cell">
+                                            {!disabled && (
+                                                <span
+                                                    className="inventario-table__drag-handle"
+                                                    draggable
+                                                    title="Arrastar para reordenar"
+                                                    aria-label={`Reordenar ${item.name || "item"}`}
+                                                    onDragStart={(event) => {
+                                                        event.stopPropagation();
+                                                        handleDragStart(index);
+                                                    }}
+                                                    onDragEnd={handleDragEnd}
+                                                >
+                                                    {"\u22EE\u22EE"}
+                                                </span>
+                                            )}
+                                        </td>
                                         <td>
                                             <input
                                                 type="text"

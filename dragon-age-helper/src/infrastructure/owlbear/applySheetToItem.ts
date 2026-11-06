@@ -3,7 +3,7 @@ import { readMetadataOwnerId } from "./tokenAccess";
 import { setTokenBarValues } from "./tokenBars";
 
 import type { Item } from "@owlbear-rodeo/sdk";
-import type { CharacterSheet } from "../../domain/entities/characterSheet";
+import type { CharacterSheet } from "@dragon-age/domain";
 
 export function applySheetMetadataToItem(
     item: Item,

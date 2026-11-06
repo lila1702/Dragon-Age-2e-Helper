@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 
-import type { Attribute } from "../../domain/entities/characterSheet";
+import type { Attribute } from "@dragon-age/domain";
 import { FocusContextMenu } from "./FocusContextMenu";
 
 interface AttributeValueInputProps {
     attribute: Attribute;
     disabled?: boolean;
+    /** Na web (widescreen): clique edita; no popover Owlbear: clique rola. */
+    preferEdit?: boolean;
+    canRoll?: boolean;
     onValueChange: (abbreviation: string, value: number) => void;
     onRoll: (attribute: Attribute) => void;
     onOpenSituationalRoll?: () => void;
@@ -29,6 +32,8 @@ function sanitizeSignedIntInput(value: string): string {
 export function AttributeValueInput({
     attribute,
     disabled = false,
+    preferEdit = false,
+    canRoll = true,
     onValueChange,
     onRoll,
     onOpenSituationalRoll,
@@ -95,17 +100,28 @@ export function AttributeValueInput({
         );
     }
 
+    const title = preferEdit
+        ? `${attribute.name}: clique para editar${canRoll ? " (botão direito para rolar)" : ""}`
+        : `${attribute.name}: clique para rolar (botão direito para editar)`;
+
     return (
         <>
             <button
                 type="button"
                 className="attribute-strip__attr-btn"
-                disabled={disabled}
-                title={`${attribute.name}: clique para rolar (botão direito para editar)`}
-                aria-label={`Rolar ${attribute.name}`}
-                onClick={() => onRoll(attribute)}
+                disabled={disabled || (!preferEdit && !canRoll)}
+                title={title}
+                aria-label={preferEdit ? `Editar ${attribute.name}` : `Rolar ${attribute.name}`}
+                onClick={() => {
+                    if (preferEdit) {
+                        if (!disabled) startEditing();
+                        return;
+                    }
+                    if (canRoll) onRoll(attribute);
+                }}
                 onContextMenu={(e) => {
                     e.preventDefault();
+                    if (disabled) return;
                     setContextMenu({ x: e.clientX, y: e.clientY });
                 }}
             >
@@ -114,15 +130,30 @@ export function AttributeValueInput({
 
             {contextMenu && (
                 <FocusContextMenu x={contextMenu.x} y={contextMenu.y} menuRef={menuRef}>
-                    <button
-                        type="button"
-                        className="focus-context-menu__item"
-                        role="menuitem"
-                        onClick={startEditing}
-                    >
-                        Editar
-                    </button>
-                    {onOpenSituationalRoll && (
+                    {!preferEdit && (
+                        <button
+                            type="button"
+                            className="focus-context-menu__item"
+                            role="menuitem"
+                            onClick={startEditing}
+                        >
+                            Editar
+                        </button>
+                    )}
+                    {preferEdit && canRoll && (
+                        <button
+                            type="button"
+                            className="focus-context-menu__item"
+                            role="menuitem"
+                            onClick={() => {
+                                setContextMenu(null);
+                                onRoll(attribute);
+                            }}
+                        >
+                            Rolar
+                        </button>
+                    )}
+                    {onOpenSituationalRoll && canRoll && (
                         <button
                             type="button"
                             className="focus-context-menu__item"

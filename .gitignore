@@ -11,3 +11,14 @@ npm-debug.log*
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Local secrets / settings
+**/settings.local.json
+.env
+.env.*
+!.env.example
+
+# Build outputs
+dist/
+server/dist/
+web/dist/

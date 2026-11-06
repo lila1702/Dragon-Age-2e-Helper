@@ -1,6 +1,6 @@
 import OBR from "@owlbear-rodeo/sdk";
 
-import type { StuntRollResult } from "../../domain/entities/diceRules";
+import type { StuntRollResult } from "@dragon-age/domain";
 
 export type OwlbearNotificationVariant = "INFO" | "SUCCESS" | "WARNING" | "ERROR";
 

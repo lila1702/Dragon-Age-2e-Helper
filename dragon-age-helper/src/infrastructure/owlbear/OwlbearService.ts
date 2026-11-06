@@ -1,6 +1,6 @@
 import OBR from "@owlbear-rodeo/sdk";
-import { calculateDicePlusStunt } from "../../domain/entities/diceRules";
-import { normalizeCharacterSheet } from "../../domain/entities/normalizeCharacterSheet";
+import { calculateDicePlusStunt } from "@dragon-age/domain";
+import { normalizeCharacterSheet } from "@dragon-age/domain";
 
 import { METADATA_KEYS, SCHEMA_VERSION } from "./metadataKeys";
 import { SELECTION_ERRORS } from "./selectionErrors";
@@ -20,7 +20,7 @@ import type { IOwlbearService, SelectionResult } from "./IOwlbearService";
 import {
     buildAttributeTestDiceNotation,
     getAttributeRollBreakdown,
-} from "../../domain/entities/attributeRoll";
+} from "@dragon-age/domain";
 
 import {
     buildAttackRollModifiers,
@@ -28,13 +28,13 @@ import {
     buildDamageRollNotationForDicePlus,
     computeDamageRawTotal,
     halveDamageTotal,
-} from "../../domain/entities/attackRoll";
+} from "@dragon-age/domain";
 
-import type { AttackRollOptions, DamageRollResult } from "../../domain/entities/attackRoll";
+import type { AttackRollOptions, DamageRollResult } from "@dragon-age/domain";
 
-import type { AttributeRollOptions } from "../../domain/entities/attributeRoll";
-import type { Attribute, CharacterSheet } from "../../domain/entities/characterSheet";
-import type { StuntRollResult } from "../../domain/entities/diceRules";
+import type { AttributeRollOptions } from "@dragon-age/domain";
+import type { Attribute, CharacterSheet } from "@dragon-age/domain";
+import type { StuntRollResult } from "@dragon-age/domain";
 
 export class OwlbearService implements IOwlbearService {
     onReady(callback: () => void): void {

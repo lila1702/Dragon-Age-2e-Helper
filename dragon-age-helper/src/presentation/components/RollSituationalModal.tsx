@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { parseSituationalModifiers } from "../../domain/entities/attributeRoll";
+import { parseSituationalModifiers } from "@dragon-age/domain";
 
 interface RollSituationalModalProps {
     open: boolean;

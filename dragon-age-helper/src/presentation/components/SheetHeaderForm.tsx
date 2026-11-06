@@ -1,7 +1,7 @@
 import { ResourceValueMax } from "./ResourceValueMax";
 import { SheetFieldInput } from "./SheetFieldInput";
 
-import type { CharacterSheet, CombatStats } from "../../domain/entities/characterSheet";
+import type { CharacterSheet, CombatStats } from "@dragon-age/domain";
 
 const DEFAULT_COMBAT: CombatStats = {
     speed: 0,
