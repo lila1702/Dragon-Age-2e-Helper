@@ -28,15 +28,52 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Resolve public URLs
+        id: urls
+        env:
+          API_URL: ${{ vars.VITE_API_BASE_URL }}
+        run: |
+          REPO="${{ github.event.repository.name }}"
+          OWNER="${{ github.repository_owner }}"
+          PAGES_ORIGIN="https://${OWNER}.github.io"
+          EXT_BASE="/${REPO}/"
+          WEB_BASE="/${REPO}/web/"
+          WEB_URL="${PAGES_ORIGIN}${WEB_BASE}"
+
+          if [ -z "$API_URL" ]; then
+            echo "::error::Defina a variável do repositório VITE_API_BASE_URL (URL HTTPS da API no Render)."
+            exit 1
+          fi
+
+          echo "api_url=${API_URL}" >> "$GITHUB_OUTPUT"
+          echo "ext_base=${EXT_BASE}" >> "$GITHUB_OUTPUT"
+          echo "web_base=${WEB_BASE}" >> "$GITHUB_OUTPUT"
+          echo "web_url=${WEB_URL}" >> "$GITHUB_OUTPUT"
+
       - name: Build extension
         working-directory: dragon-age-helper
         env:
-          VITE_BASE_PATH: /Dragon-Age-2e-Helper/
+          VITE_BASE_PATH: ${{ steps.urls.outputs.ext_base }}
+          VITE_API_BASE_URL: ${{ steps.urls.outputs.api_url }}
+          VITE_WEB_APP_URL: ${{ steps.urls.outputs.web_url }}
         run: npm run build
+
+      - name: Build web
+        working-directory: web
+        env:
+          VITE_BASE_PATH: ${{ steps.urls.outputs.web_base }}
+          VITE_API_BASE_URL: ${{ steps.urls.outputs.api_url }}
+        run: npm run build
+
+      - name: Assemble Pages artifact
+        run: |
+          mkdir -p site/web
+          cp -R dragon-age-helper/dist/. site/
+          cp -R web/dist/. site/web/
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dragon-age-helper/dist
+          path: site
 
   deploy:
     needs: build
