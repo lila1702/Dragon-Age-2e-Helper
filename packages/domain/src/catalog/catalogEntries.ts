@@ -140,7 +140,6 @@ export function catalogEntryToSpecialization(entry: CatalogEntry): ArcanaSpecial
     };
 }
 
-/** Adiciona a entrada do catálogo à ficha (gera novo id na ficha). */
 export function applyCatalogEntryToSheet(
     sheet: CharacterSheet,
     entry: CatalogEntry

@@ -99,7 +99,6 @@ export function App() {
                     );
                 }
             });
-        // Iniciativa: API permanece; UI ocultada por enquanto.
         if (selectedCampaign?.role === "GM") {
             void api.listCampaignPlayers(campaignId).then(setPlayers).catch(() => setPlayers([]));
         } else {
@@ -128,7 +127,6 @@ export function App() {
         knownCharacters: characters,
     });
 
-    // Mantém o nome no menu lateral em sincronia com a ficha.
     useEffect(() => {
         if (!characterId) return;
         const liveName = synced.sheet.name?.trim() || synced.character?.name;
@@ -370,8 +368,7 @@ export function App() {
                                     Na Web, jogadores só veem as próprias fichas
                                 </label>
                                 <p className="hint">
-                                    No Owlbear, jogadores ainda podem visualizar qualquer ficha
-                                    aberta, mas só editam as suas.
+                                    No Owlbear, a visualização das fichas abertas não muda.
                                 </p>
                             </div>
                         )}

@@ -64,8 +64,7 @@ export function GmSettingsPanel({
                             <div>
                                 <strong>Configurações da mesa</strong>
                                 <p className="gm-settings__hint">
-                                    Atalhos do que você também gerencia no site. Útil sem sair do
-                                    Owlbear.
+                                    Preferências da campanha e vínculo de fichas.
                                 </p>
                             </div>
                             <button

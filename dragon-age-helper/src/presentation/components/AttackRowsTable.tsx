@@ -298,7 +298,7 @@ export function AttackRowsTable<T extends AttackRow>({
                                             title={
                                                 canRoll
                                                     ? "Clique para rolar ataque (botão direito para opções)"
-                                                    : "Botão direito para editar/excluir"
+                                                    : attack.name || "Nome da arma"
                                             }
                                             onClick={() => {
                                                 if (!canRoll) return;

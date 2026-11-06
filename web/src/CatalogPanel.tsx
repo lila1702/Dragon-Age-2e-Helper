@@ -203,8 +203,7 @@ export function CatalogPanel({
                 </header>
 
                 <p className="catalog-view__lead">
-                    Itens, magias, talentos e habilidades reutilizáveis. Tags de classe e
-                    requisitos são só exibição. Clique numa ficha na lateral para voltar.
+                    Itens, magias, talentos e habilidades reutilizáveis.
                 </p>
 
                 <div className="catalog-panel">

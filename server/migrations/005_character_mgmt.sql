@@ -1,4 +1,3 @@
--- Status (ativa/inativa) e vínculo explícito a jogador da mesa.
 ALTER TABLE characters
   ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active'
     CHECK (status IN ('active', 'inactive'));
@@ -11,11 +10,9 @@ CREATE INDEX IF NOT EXISTS characters_assigned_player_idx
   ON characters(assigned_player_user_id)
   WHERE assigned_player_user_id IS NOT NULL;
 
--- Preferência de campanha: jogadores só vêem as próprias fichas na Web.
 ALTER TABLE campaigns
   ADD COLUMN IF NOT EXISTS players_see_only_own_sheets BOOLEAN NOT NULL DEFAULT FALSE;
 
--- Catálogo reutilizável (itens, magias, talentos, habilidades de classe).
 CREATE TABLE IF NOT EXISTS catalog_entries (
   id UUID PRIMARY KEY,
   ruleset_id TEXT NOT NULL REFERENCES rulesets(id) ON DELETE CASCADE,
@@ -25,9 +22,7 @@ CREATE TABLE IF NOT EXISTS catalog_entries (
   name TEXT NOT NULL,
   summary TEXT NOT NULL DEFAULT '',
   body JSONB NOT NULL DEFAULT '{}'::jsonb,
-  -- classes aplicáveis (ex.: ["Mago","Ladino"]); usado em level-up automático
   class_tags TEXT[] NOT NULL DEFAULT '{}',
-  -- requisitos exibidos (não forçados pelo sistema)
   requirement_tags TEXT[] NOT NULL DEFAULT '{}',
   requirements_text TEXT NOT NULL DEFAULT '',
   sort_order INTEGER NOT NULL DEFAULT 0,

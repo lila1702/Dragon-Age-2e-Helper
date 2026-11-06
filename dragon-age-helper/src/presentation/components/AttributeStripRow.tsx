@@ -19,10 +19,8 @@ export interface AttributeStripRowProps {
     onFocusBonusChange: (abbreviation: string, bonus: number) => void;
     onAttributeValueChange: (abbreviation: string, value: number) => void;
     onPrimaryChange: (abbreviation: string, isPrimary: boolean) => void;
-    /** Bloqueia edição de valor/focos/primário. */
     disabled?: boolean;
     canRoll?: boolean;
-    /** true na web: clique edita o valor em vez de rolar. */
     preferEdit?: boolean;
 }
 

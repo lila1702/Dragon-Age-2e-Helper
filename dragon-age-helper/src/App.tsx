@@ -299,8 +299,6 @@ function App() {
                 />
             )}
 
-            {/* Iniciativa: UI ocultada por enquanto; InitiativePanel + API permanecem no código. */}
-
             <CharacterSheetView
                 sheet={sheet}
                 isObrAvailable={local.isObrAvailable}

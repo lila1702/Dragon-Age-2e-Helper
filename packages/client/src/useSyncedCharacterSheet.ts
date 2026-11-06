@@ -58,7 +58,6 @@ export function useSyncedCharacterSheet(options: {
     sessionToken: string | null;
     canEdit: boolean;
     displayName: string;
-    /** Pré-aquece o cache com fichas já listadas (troca instantânea). */
     knownCharacters?: CharacterRecord[];
 }): SyncedSheetState {
     const { api, characterId, campaignId, sessionToken, canEdit, displayName, knownCharacters } =
@@ -100,7 +99,6 @@ export function useSyncedCharacterSheet(options: {
         for (const record of knownCharacters) {
             if (!record.sheet) continue;
             const existing = cacheRef.current.get(record.id);
-            // Não sobrescrever versão mais nova já editada localmente.
             if (existing && existing.revision >= record.revision) continue;
             remember(record);
         }
@@ -162,7 +160,6 @@ export function useSyncedCharacterSheet(options: {
         void reload();
     }, [abandonPending, characterId, reload]);
 
-    // WebSocket é por campanha — não reconectar ao trocar de ficha.
     useEffect(() => {
         if (!campaignId || !sessionToken) {
             realtimeRef.current?.disconnect();
@@ -235,7 +232,6 @@ export function useSyncedCharacterSheet(options: {
 
             if (event.type === "sheet.snapshot") {
                 const snap = event.snapshot;
-                // Não sobrescrever edições locais ainda não persistidas.
                 const hasLocalPending =
                     snap.characterId === activeId &&
                     (fullSaveTimer.current !== null || pendingTimers.current.size > 0);
@@ -358,7 +354,6 @@ export function useSyncedCharacterSheet(options: {
             fullSaveTimer.current = null;
             const id = characterId;
             if (characterIdRef.current !== id) return;
-            // Descarta patches pontuais: o PUT já leva o sheetRef completo.
             clearTimers(pendingTimers.current);
             const snapshot = sheetRef.current;
             void api.putCharacter(id, revisionRef.current, snapshot).then(
@@ -367,7 +362,6 @@ export function useSyncedCharacterSheet(options: {
                         remember(updated);
                         return;
                     }
-                    // Mantém o sheet local se o usuário editou durante o round-trip.
                     const localSheet = sheetRef.current;
                     remember({
                         ...updated,
@@ -429,8 +423,6 @@ export function useSyncedCharacterSheet(options: {
                 }
                 return next;
             });
-            // Se já há save completo pendente (ex.: item recém-criado), só reagenda o PUT
-            // em vez de mandar patch avulso (evita 409 / snapshot que apaga o texto).
             if (fullSaveTimer.current) {
                 scheduleFullSave();
                 return;
@@ -443,7 +435,6 @@ export function useSyncedCharacterSheet(options: {
     const mutateSheet = useCallback(
         (updater: (current: CharacterSheet) => CharacterSheet) => {
             if (!canEdit) return;
-            // Patches pendentes já estão no sheet local; o save completo as cobre.
             clearTimers(pendingTimers.current);
             setSheet((prev) => {
                 const next = updater(prev);

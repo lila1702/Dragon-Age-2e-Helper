@@ -1,9 +1,7 @@
 import type { Attribute } from "./characterSheet";
 
 export const DEFAULT_FOCUS_BONUS = 2;
-/** Máximo RAW (nível 11+: até duas melhorias de +1 no mesmo atributo). */
 export const MAX_FOCUS_BONUS = 4;
-/** Nível a partir do qual focos podem ser melhorados (+1 por escolha). */
 export const FOCUS_IMPROVEMENT_LEVEL = 11;
 
 export interface AttributeRollOptions {

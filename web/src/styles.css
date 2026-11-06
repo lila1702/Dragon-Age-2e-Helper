@@ -14,7 +14,6 @@
   --font-sheet: "Merriweather", Georgia, "Times New Roman", serif;
   --sans: system-ui, "Segoe UI", Roboto, sans-serif;
 
-  /* Fluido: sidebar cresce/encolhe com a viewport (e com zoom) */
   --sidebar-min: 16rem;
   --sidebar-ideal: 22rem;
   --sidebar-max: 26rem;
@@ -50,7 +49,6 @@ body {
   background: var(--da-outer-bg);
 }
 
-/* Sobrescreve o limite de 680px do popover Owlbear */
 #root {
   max-width: none !important;
   min-height: 100dvh !important;
@@ -58,8 +56,6 @@ body {
   margin: 0 !important;
   width: 100% !important;
 }
-
-/* ========== Shell fluido (widescreen primeiro) ========== */
 
 .app-shell {
   height: 100dvh;
@@ -169,8 +165,6 @@ body {
   min-height: 100%;
 }
 
-/* ========== Widescreen sheet: flex/grid que reflow com zoom ========== */
-
 .character-sheet--widescreen .sheet-header-form {
   padding: clamp(0.5rem, 1vw, 0.85rem) clamp(0.55rem, 1.2vw, 1rem) 0.3rem;
   gap: var(--sheet-gap);
@@ -264,8 +258,6 @@ body {
   max-width: 100%;
 }
 
-/* ========== Auth ========== */
-
 .app-card,
 .auth-shell {
   max-width: 26rem;
@@ -307,7 +299,6 @@ body {
   min-width: 0;
 }
 
-/* Accordion estilo markdown <details> */
 .panel-fold {
   background: var(--da-white);
   border: 1px solid var(--da-black);
@@ -421,7 +412,6 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Nomes/dano de arma na ficha: não esmaecer quando rolagem está desligada na Web */
 .character-sheet .habilidades-table__roll-btn:disabled,
 .character-sheet .habilidades-table__roll-btn--static,
 .character-sheet .habilidades-table__damage-roll:disabled,
@@ -930,8 +920,6 @@ button:disabled {
   width: auto;
   flex: 1 1 auto;
 }
-
-/* ========== Mobile / zoom alto: empilha ========== */
 
 @media (max-width: 52rem) {
   .app-main {

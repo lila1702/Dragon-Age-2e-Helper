@@ -23,7 +23,6 @@ import "../styles/sheet.css";
 
 export interface CharacterSheetViewProps {
     sheet: CharacterSheet;
-    /** popover = Owlbear estreito; widescreen = site em tela larga */
     layout?: "popover" | "widescreen";
     isObrAvailable: boolean;
     isObrReady: boolean;
