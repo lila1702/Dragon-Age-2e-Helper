@@ -1,5 +1,6 @@
 {
   "port": 3001,
   "databaseUrl": "postgres://postgres:postgres@localhost:5432/dragon_age",
-  "sessionSecret": "change-me-to-a-long-random-string"
+  "sessionSecret": "change-me-to-a-long-random-string",
+  "databaseSslCa": ""
 }

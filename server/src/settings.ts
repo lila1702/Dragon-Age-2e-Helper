@@ -6,6 +6,7 @@ export interface ServerSettings {
     port: number;
     databaseUrl: string;
     sessionSecret: string;
+    databaseSslCa?: string;
 }
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
@@ -16,6 +17,7 @@ function fromEnv(): Partial<ServerSettings> {
         port: process.env.PORT ? Number(process.env.PORT) : undefined,
         databaseUrl: process.env.DATABASE_URL,
         sessionSecret: process.env.SESSION_SECRET,
+        databaseSslCa: process.env.DATABASE_SSL_CA,
     };
 }
 

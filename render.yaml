@@ -13,5 +13,7 @@ services:
         value: "20"
       - key: DATABASE_URL
         sync: false
+      - key: DATABASE_SSL_CA
+        sync: false
       - key: SESSION_SECRET
         generateValue: true
