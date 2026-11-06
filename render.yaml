@@ -5,7 +5,7 @@ services:
     plan: free
     region: oregon
     rootDir: .
-    buildCommand: npm install && npm run build:server
+    buildCommand: npm install
     startCommand: npm run migrate -w server && npm run start -w server
     healthCheckPath: /health
     envVars:
